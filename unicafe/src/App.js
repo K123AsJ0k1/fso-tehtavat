@@ -14,10 +14,10 @@ const Button = (props) => {
   )
 }
 
-const Statistic = (props) => {
+const StatisticLine = (props) => {
   return (
     <div>
-        {props.name} {props.number}
+        {props.text} {props.value}
         <br/>
     </div>
   )
@@ -51,12 +51,12 @@ const Statistics = (props) => {
 
   return (
     <div>
-      <Statistic name = "good" number = {good}/>
-      <Statistic name = "neutral" number = {neutral}/>
-      <Statistic name = "bad" number = {bad}/>
-      <Statistic name = "all" number = {countAll()}/>
-      <Statistic name = "average" number = {average()}/>
-      <Statistic name = "positive" number = {positive()}/>
+      <StatisticLine text = "good" value = {good}/>
+      <StatisticLine text = "neutral" value = {neutral}/>
+      <StatisticLine text = "bad" value = {bad}/>
+      <StatisticLine text = "all" value = {countAll()}/>
+      <StatisticLine text = "average" value = {average()}/>
+      <StatisticLine text = "positive" value = {positive()}/>
     </div>
   )
 }
