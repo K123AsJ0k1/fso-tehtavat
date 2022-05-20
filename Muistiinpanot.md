@@ -312,8 +312,358 @@ tai funktiolauseke
 
 Tällä kurssilla kaikki funktiot määritellään nuolisyntaksilla.
 
+Reacting komponenttien sisälle voidaan luoda apufunktioita seuraavasti:
+
+    const Hello = (props) => {
+        const bornYear = () => {    
+            const yearNow = new Date().getFullYear()    
+            return yearNow - props.age  
+        }
+        return (
+            <div>
+                <p>Hello {props.name}, you are {props.age} years old</p>
+                <p>So you were probably born {bornYear()}</p>    
+            </div>
+        )
+    }
+
+Huomaa, ettei tähän apufunktioon tarvitse välittää propseja, sillä se näkee komponentille välitetyt propsit.
+
+Propsin ollessa olio, voidaan destruktioinin avulla suoraviivaista koodia seuraavasti:
+
+    const Hello = (props) => {
+        const name = props.name  const age = props.age
+        const bornYear = () => new Date().getFullYear() - age
+        return (
+            <div>
+            <p>Hello {name}, you are {age} years old</p>      <p>So you were probably born {bornYear()}</p>
+            </div>
+        )
+    }
+
+Huomaa, että tässä bornYear on määritelty ilman aaltosulkeita, sillä se koostuu ainoastaan yhdestä komennosta. Kyseisestä syystä sama funktio voidaan määritellä kahdella eri tavalla:
+
+    const bornYear = () => new Date().getFullYear() - age
+
+    const bornYear = () => {
+        return new Date().getFullYear() - age
+    }
+
+Destruktointi siis helpottaa apumuuttujien määrittelyä, sillä propsien arvot voidaan kerätä yksittäisiin muuttujiin, kuten const {name, age} = props. Tämä voidaan viedä pidemmälle määrittelemällä const Hello = ({name, age}) => {}.
+
+Sivu voidaan saada renderöitymään kolme kertaa seuraavasti:
+
+    let counter = 1
+
+    const refresh = () => {
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <App counter={counter} />
+        )
+    }
+
+    refresh()
+    counter += 1
+    refresh()
+    counter += 1
+    refresh()
+
+Automaattinen tapa tehdä näin toistuvasti sekunnin välein on käyttää SetInterval medodia seuraaavasti:
+
+    setInterval(() => {
+    refresh()
+    counter += 1
+    }, 1000)
+
+Tosin huomaa, ettei render funktion toistuva kutsuminen ole hyvä tapa päivittää komponentteja, vaan parempi tapa on käyttää state hookeja seuraavasti:
+
+    import { useState } from 'react'
+    const App = () => {
+        const [ counter, setCounter ] = useState(0)
+        setTimeout(    () => setCounter(counter + 1),    1000  )
+        return (
+            <div>{counter}</div>
+        )
+    }
+
+    export default App
+
+Tässä { useState } from 'react' tuo useState metodin ja const [ counter, setCounter ] = useState(0) luo komponentille alkuarvon 0 saavan tilan. Tässä counter pitää sisällään tilan arvon ja setCounter on viite funktio, jonka avulla tila voidaan muuttaa. Näiden takia funktio setTimeout määrittelee setCounter(counter + 1).
+
+Kun tilaa muuttava funktiota setCounter kutsutaan, renderöi react komponentin uudelleen, eli se suorittaa komponentin koodin uudelleen. Huomaa, että funktion useState kutsuminen palauttaa jo olemassaolevan tilan arvon, joka on toisella kerralla 1.
+
+Tapahtumankäsittelijät ovat funktiota, joita kutsutaan tiettyjen tapahtumien yhteydessä. Esimerkki tapahtumakäsittelijästä on:
+
+    const handleClick = () => {    
+        console.log('clicked')  
+    }
+    return (
+        <div>
+            <div>{counter}</div>
+            <button onClick={handleClick}>        
+            plus      
+            </button>    
+        </div>
+    )
 
 
+Elementti tapahtumakäsittelijät, joista yksi mahdollistaa +1 kasvatuksen ja arvon muuttamisen 0, voidaan rakentaa seuraavasti:
 
+    <button onClick={() => setCounter(counter + 1)}>
+        plus
+    </button>
+    
+    <button onClick={() => setCounter(0)}>         
+        zero      
+    </button>
 
+Huomaa, että tapahtumakäsittelijäksi on tarkoitus määritellä joko funktio tai viite funktio, minkä takia (button onClick={setCounter(counter+1)}) ei toimi, sillä se on funktiokutsu.
 
+Huomaa myös se, ettei tapahtumakäsittelijöiden suora määrittely JSX-templaten sisällä ole viistasta, minkä takia parempi tapa on:
+
+    const App = () => {
+        const [ counter, setCounter ] = useState(0)
+
+        const increaseByOne = () => setCounter(counter + 1)    
+        const setToZero = () => setCounter(0)
+        return (
+            <div>
+                <div>{counter}</div>
+                <button onClick={increaseByOne}>       
+                    plus
+                </button>
+                <button onClick={setToZero}>        
+                    zero
+                </button>
+            </div>
+        )
+    }
+
+Reactissa suositaan pieniä komponentteja, joita on mahdollista uusio käyttää sovelluksen eri osissa tai jopa eri sovelluksissa. Huomaa, että tilan sijoitus riittävän ylsö komponenttihierarkiassa on hyvä käytäntö. Näiden tietojen avulla saadaan seuraava sovellus koodi, joka mahdollistaa +1, resetoinin ja -1 toimet:
+
+    import { useState } from 'react'
+
+    const Display = (props) => {
+        return (
+            <div>{props.counter}</div>
+        )
+    }
+
+    const Button = (props) => {
+        return (
+            <button onClick={props.handleClick}>
+            {props.text}
+            </button>
+        )
+    }
+
+    const App = () => {
+        const [ counter, setCounter ] = useState(0)
+
+        const increaseByOne = () => setCounter(counter + 1)
+        const decreaseByOne = () => setCounter(counter - 1)
+        const setToZero = () => setCounter(0)
+
+        return (
+            <div>
+            <Display counter={counter}/>      
+            <Button       
+            handleClick={increaseByOne}        
+            text='plus'     
+            />      
+            <Button       
+            handleClick={setToZero}        
+            text='zero'     
+            />           
+            <Button        
+            handleClick={decreaseByOne}        
+            text='minus'      
+            />   
+            </div>
+        )
+    }
+
+    export default App
+
+Käytännössä tämä sovellus toimii seuraavasti: App koodin suoritus luo useState-hookin asettamalla laskurin tilan counter ja komponentti renderöi laskimenn alkuarvon 0 näyttävän komponentin display ja button komponenttia. Kun jotain nappia painetaan, suoritetaan sen mukainen tapahtumakäsittelijä, joka aiheuttaa komponentin uudellenrenderöitymisen.
+
+Huomaa myös se, että tämä sovelluksen ali komponentit voidaan refaktoirida muotoihin:
+
+    const Display = ({ counter }) => <div>{counter}</div>
+
+    const Button = ({ handleClick, text }) => (
+        <button onClick={handleClick}>
+            {text}
+        </button>
+    )
+
+Jos materiaalin koodi aiheuttaa ongelmia Reactin kannalta, niin muuta package.json muotoon
+
+    {
+    "dependencies": {
+        "react": "^17.0.2",    
+        "react-dom": "^17.0.2",    
+        "react-scripts": "5.0.0",
+        "web-vitals": "^2.1.4"
+    },
+    // ...
+    }
+
+ja asenna tarvittavat riippuvuudet uudelleen komennolla
+
+    npm install
+
+Huomaa myös se, että index.js eroaa, sillä React 17:n muoto on
+
+    import ReactDOM from 'react-dom'
+    import App from './App'
+
+    ReactDOM.render(<App />, document.getElementById('root'))
+
+, kun taas React 18 käyttää muotoa:
+
+    import React from 'react'
+    import ReactDOM from 'react-dom/client'
+
+    import App from './App'
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+
+Helpoin ja usein paras tapa luoda sovellukselle eri tiloja on kutsua useState useampaan kertaan. Komponentin tila tai yksittäinen tilan pala voi olla minkä tahansa tyyppinen. On myös mahdollista toteuttaa samanlaiset toiminnallisuudet olion avulla, jolloin komponentti tarvitsee ainoastaan yhden tilan.
+
+Olioiden tapauksessa tyylikkäämpi tapa kirjoittaa on object spread syntaksi, jossa { ...clicks } luo olion ja siihen voidaan lisätä asioita { ...clicks, right: 1 }, minkä seurauksesta voidaan luoda vasemman ja oikean nappin painamisesta huolehtivat tapahtumakäsittelijät:
+
+    const handleLeftClick = () =>
+        setClicks({ ...clicks, left: clicks.left + 1 })
+
+    const handleRightClick = () =>
+        setClicks({ ...clicks, right: clicks.right + 1 })
+
+Huomio, että syy 
+
+    const handleLeftClick = () => {
+        clicks.left++
+        setClicks(clicks)
+    }
+
+toimimattomuuteen on se, että tilan muutos on aina tehtävä asettamalla uudeksi tilaksi vanhan perustella tehty kopio.
+
+Huomaa, että jokaisen tilan pitäminen yhdessä oliossa on huono ratkaisu, sillä se monimutkaistaa sovellusta. Täten parempi tapa on luoda tiloista palasia.
+
+Taulukko voidaan luoda esimerkiksi const [allClicks, setAll] = useState([]). Metodilla join voidaan muodostaa taulukosta merkkijono, jossa merkit on erotettu halutulla tavalla.
+
+Reactissa komponentin ehdollinen renderöinti voidaan tehdä seuraavasti:
+
+    const History = (props) => {  
+        if (props.allClicks.length === 0) {    
+            return (      
+            <div>        
+                the app is used by pressing the buttons      
+            </div>    
+            )  
+        }  
+        return (    
+            <div>      
+            button press history: {props.allClicks.join(' ')}    
+            </div>  
+        )
+    }
+
+Huomaa, että state hook alettiin käyttämään Reactin versiossa 16.8.0, minkä seurauksesta maailmassa on edelleen miljardeja rivejä vanhaa Reactia, jota saatat joutua ylläpitämään. Tämän kurssin aikana tosin käytetään pelkästään hookeja, mutta class komponentit käydään kurssin seitsemännessä osassa läpi.
+
+Huomaa, että debugausessa älä yhdistele asioita javamaisesti plussalla, vaan erota ne toisistaan pilkulla kuten console.log('props value is', props). Tämä ei tosin ole ainoa tapa debugata, vaan Chromen dev konsolin debugger komento suoritetaan. Muuttujien tilaa voidaan tarkastella console välilehdellä.
+
+Kun bugi selviää, niin debugger komennon voi poistaa ja ladata sivu uudelleen. Siinä on mahdollista suorittaa koodia tarvittaessa rivi riviltä Sources-välilehden oikealta laidalta. On myös suositeltavaa, että käyttää react developer tools:ja, jonka components näyttää tilojen tiedot.
+
+Huomaa, että sovelluksen tilat vaativat sen, että hookeja käytetään tietyjen rajoitusten mukaisesti. UseState ja useEffectia ei saa kutsua loopissa, ehtolausekkeiden sisältä tai muista kuin komponentin määrittelevästä funktiosta. Tämä takaa, että hookeja kutsutaan aina samassa järjestyksessä, joten:
+
+    const App = (props) => {
+        // nämä ovat ok
+        const [age, setAge] = useState(0)
+        const [name, setName] = useState('Juha Tauriainen')
+
+        if ( age > 10 ) {
+            // ei ehtolauseessa
+            const [foobar, setFoobar] = useState(null)
+        }
+
+        for ( let i = 0; i < age; i++ ) {
+            // eikä myöskään loopissa
+            const [rightWay, setRightWay] = useState(false)
+        }
+
+        const notGood = () => {
+            // ei muiden kuin komponentin määrittelevän funktion sisällä
+            const [x, setX] = useState(-1000)
+        }
+
+        return (
+            //...
+        )
+    }
+
+Tapahtumakäsittelijät voidaan myös määritellä siten, että palauttavat funktion. Tätä tyyliä ei tosin tulla käyttämään kurssin aikana, mutta ne ovat aika yleisiä funktionaalista ohjelmointityyliä käyttäessä. Tällä tavalla voidaan luoda seuraava sovellus:
+
+    const App = (props) => {
+        const [value, setValue] = useState(10)
+
+        const hello = () => {    
+            const handler = () => console.log('hello world')    
+            return handler  
+        }
+        return (
+            <div>
+            {value}
+            <button onClick={hello()}>button</button>
+            </div>
+        )
+    }
+
+Huomaa, että tässä {hello()} olellisesti muuttuu muotoon {() => console.log('hello world')}. Tämä tapa on siitä hyödyllinen, että se mahdollistaa parametrien viemisen seuraavalla tavalla:
+
+    const App = (props) => {
+        const [value, setValue] = useState(10)
+
+        const hello = (who) => {    
+            const handler = () => {      
+                console.log('hello', who)    
+            }    
+            return handler  
+        }
+
+        return (
+            <div>
+            {value}
+            <button onClick={hello('world')}>button</button>      <button onClick={hello('react')}>button</button>      <button onClick={hello('function')}>button</button>    </div>
+        )
+    }
+
+Huomaa se, ettei komponetteja määritellä komponenttien sisällä, kuten:
+
+    // tämä on oikea paikka määritellä komponentti!
+    const Button = (props) => (
+        <button onClick={props.handleClick}>
+            {props.text}
+        </button>
+    )
+
+    const App = (props) => {
+        const [value, setValue] = useState(10)
+
+        const setToValue = newValue => {
+            console.log('value now', newValue)
+            setValue(newValue)
+        }
+
+        // älä määrittele komponenttia täällä!
+        const Display = props => <div>{props.value}</div>
+        return (
+            <div>
+            <Display value={value} />
+            <Button handleClick={() => setToValue(1000)} text="thousand" />
+            <Button handleClick={() => setToValue(0)} text="reset" />
+            <Button handleClick={() => setToValue(value + 1)} text="increment" />
+            </div>
+        )
+    }
+
+Tämä tapa on hyödytön ja tekee komponenttien optimoinnista mahdotonta.
