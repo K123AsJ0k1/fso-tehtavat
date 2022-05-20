@@ -31,6 +31,18 @@ const App = () => {
   const increaseGoodByOne = () => setGood(good + 1)
   const increaseNeutralByOne = () => setNeutral(neutral + 1)
   const increaseBadByOne = () => setBad(bad + 1)
+  const countAll = () => good+neutral+bad
+  
+  const average = () => {
+    const sum = 1*good+0*neutral-1*bad
+    const amount = good+neutral+bad
+    return (sum/amount)
+  }
+  
+  const positive = () => {
+    const amount = good+neutral+bad
+    return ((good/amount)*100 + " %") 
+  }
 
   
   return (
@@ -43,6 +55,9 @@ const App = () => {
       <Statistic name = "good" number = {good}/>
       <Statistic name = "neutral" number = {neutral}/>
       <Statistic name = "bad" number = {bad}/>
+      <Statistic name = "all" number = {countAll()}/>
+      <Statistic name = "average" number = {average()}/>
+      <Statistic name = "positive" number = {positive()}/>
     </div>
   )
 }
