@@ -6,3 +6,8 @@ Osa 0
 
 Osa 1
 
+![Tehtävät 1.1-1.5](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%201/Teht%C3%A4v%C3%A4t/kurssitiedot)
+![Tehtävät 1.6-1.11](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%201/Teht%C3%A4v%C3%A4t/unicafe)
+![Tehtävät 1.12-1.14](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%201/Teht%C3%A4v%C3%A4t/anekdootit)
+
+
