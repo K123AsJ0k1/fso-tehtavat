@@ -667,3 +667,29 @@ Huomaa se, ettei komponetteja määritellä komponenttien sisällä, kuten:
     }
 
 Tämä tapa on hyödytön ja tekee komponenttien optimoinnista mahdotonta.
+
+# HTML taulukoiden perusteet
+
+Taulukot mahdollistavat kätevän tavan näyttää suuren määrän informaatiota helposti ymmärettävällä tavalla. Näitä ennen käytettiin nettisivujen rakenteina CSS tuen huonouden takia, mutta tämä on huono idea.
+
+Reactin tapauksessa HTML taulukko koostuu (table), (tbody), (tr), (th), (colgroup) ja (col) elementeistä. 
+
+(table) ja (tbody) antavat rakenteen, jossa (table) sisältää taulukot ja (tbody) sisältää taulukon.
+
+(tr) ja (th) luovat taulukon neliöt siten, että (tr) luo rivin ja (th) luo sarakkeen. (colgroup) ja (col) tekevät samoin, mutta ne antavat paremman tyylitystavat. 
+
+Huomaa, että (div) ei saa löytyä taulukon sisältä, vaan se on oltava elementtihierarkiassa (table) elementtiä suurempi. Reactissa hyväksyttävä taulukko on seuraava:
+
+    <div>
+        <table>
+            <tbody>
+                <tr>
+                    <td>Otsikko</td>
+                    <td>Arvo</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+---
+
