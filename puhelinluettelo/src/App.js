@@ -8,13 +8,22 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault()
 
-    const personObject = {
-      name: newName,
-      id: persons.length +1,
+    const copyPerson = persons.find(person => person.name === newName)
+    
+    if (!(copyPerson === undefined)) {
+      alert(`${newName} is already added to phonebook`)
+      return 0
     }
 
-    setPersons(persons.concat(personObject))
-    setNewName('')
+    const personObject = {
+      name: newName,
+    }
+
+    if (copyPerson === undefined) {
+      setPersons(persons.concat(personObject))
+      setNewName('')
+    } 
+
   }
 
   const numberList = persons.map(person => 

@@ -269,5 +269,9 @@ Tätä sovellusta voidaan edelleen muokata siten, että näytetäänkö kaikki v
 
 Huomaa, että tässä oleva ehdollinen operaattori voidaan ymmärtää siten, että const tulos = ehto ? val1 : val2. Tässä tuloksen arvo saa val1, jos ehto on tosi, joten se saa val2 ehdon ollessaan epätosi.
 
+JavaScriptissä huomaa se, että tyylikkäin tapa muodostaa muuttujan perustuva merkkijono on template string, eli:
+
+    `${newName} is already added to phonebook`
+
 
 
