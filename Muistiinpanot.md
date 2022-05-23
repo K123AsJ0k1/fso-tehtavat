@@ -273,5 +273,163 @@ JavaScriptissä huomaa se, että tyylikkäin tapa muodostaa muuttujan perustuva 
 
     `${newName} is already added to phonebook`
 
+# Datan haku palvelimelta
 
+Backendin eli palvelinpuolen voidaan toteuttaa helposti JSON serverillä, joka voidaan asentaa globaalisti komennolla npm install -g json-server. Tämä vaatii pääkäyttäjän oikeuksia, minkä takia vaihtoehtoinen tapa on käynnistää komennolla npx json-server --port=3001 --watch db.json.
+
+Huomaa, että oletusarvoisesti JSON serveri käynnistyy porttiin 3000, mutta create-react-app:ien sovellusten varatessa kyseisen portin, on JSON serverit määriteltävä vaihtoehtoiseen portiin 3001. Avamalla osoitteen http://localhost:3001/notes sivun saadaan db.jsonin tallennettut tiedot:
+
+    {
+        "notes": [
+            {
+            "id": 1,
+            "content": "HTML is easy",
+            "date": "2022-1-17T17:30:31.098Z",
+            "important": true
+            },
+            {
+            "id": 2,
+            "content": "Browser can execute only JavaScript",
+            "date": "2022-1-17T18:39:34.091Z",
+            "important": false
+            },
+            {
+            "id": 3,
+            "content": "GET and POST are the most important methods of HTTP protocol",
+            "date": "2022-1-17T19:20:14.298Z",
+            "important": true
+            }
+        ]
+    }
+
+JSON server tallentaa kaiken datan palvelimella sijaitsevaan tiedostoon db.json. Todellisuudessa data tullaan tallentamaan johonkin tietokantaan, mutta JSON Server on kuitenkin käyttökelpoinen apuväline, joka mahdollistaa palvelinpuolen toiminnallisuuden käyttämisen kehitysvaiheessa.
+
+JavaScript suoritusympäristö noudattaa asynkronista mallia, eli IO-operaatiot suoritetaan ei-blokkaavana, joten operaatioiden tulosta ei jäädä odottamaan van koodin suoritusta jatketaan heti eteenpäin. Kun operaatio valmistuu, kutsutaan operaation tapahtumakäsittelijöitä.
+
+Huomaa, että tämä suoritusympäristö on yksisäkeinen, eli ne eivät voi suorittaa rinnakkaista koodia. Tämän takia on pakko käyttää ei-blokkaava mallia IO-operaatioiden suoritukseen, sillä muuten selain jäätyisi haettaessa palvelimelta dataa.
+
+Samasta syystä, jos koodin suoritus kestää pitkään, niin selain menee jumiin suorituksen ajaksi. Esimerkiksi Chromessa selain tabia ei pysty edes sulkemaan pitkän suorituksen aikana. Tämän takia koodin logiikka on oltava sellainen, ettei yksittäinen laskenta kestä liian kauan.
+
+On olemassa eri tapoja hakea dataa palvelimelta (kuten fetch funktio), mutta tarkastellaan axios-kirjastoa, koska sen avulla voidaan tarkastellaa npm-pakettejen liittämistä react-projektiin. Lähes kaikki JavaScript projektit ovat npm avulla luotuja ja varma merkki on package.json.
+
+Huomaa, että npm komennot tulee antaa aina juurihakemistossa, eli siinä paikassa, jossa package.json on. Axios-kirjasto voidaan asentaa komennolla npm install axios. Asennettan sen lisäksi npm install json-server ---save-dev ja muutetaan package.json seuraavasti:
+
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject",
+        "server": "json-server -p3001 --watch db.json"  
+    },
+
+Tämän skriptin avulla voidaan JSON serveri käynnistää mukavasti hakemistosta komennolla npm run server ilman parametrien määrittelyä. Huomaa, että axios tallennettiin sovelluksen suoritusaikaiseksi riippuvuudeksi ja JSON server sovelluskehityksen aikaiseksi.
+
+Axios voidaan importoida
+
+    import axios from 'axios'
+
+avulla ja sen get metodia käytetään
+
+    const promise = axios.get('http://localhost:3001/notes')
+
+avulla. Tässä get palauttaa promisen, mikä edustaa asynksonista operaatiota, joka voi olla kolmessa eri tilassa:
+
+- Promise on pending, eli promisea vastaava asynkroninen operaatio ei ole vielä tapahtunut
+- Jos operaatio päättyy onnistuneesti, promise menee tilaan fulfilled, josta joskus käytetään nimeä resolved
+- Jos operaatio epäonnistuu, niin promise menee tilaan rejected
+  
+Promisen tuomaa dataa voidaan tarkastella seuraavasti:
+
+    const promise = axios.get('http://localhost:3001/notes')
+
+    promise.then(response => {
+        console.log(response)    
+    })
+
+Tässä tapahtumakuuntelijassa then metodi rekistöröi takaisinkutsufunktion ja antaa silel parametriksi olion response, joka sisältää kaiken oleellisen HTTP GET- pyynnön vastaukseen liittyvän. Huomaa, ettei promise-oliota tarvitse tallettaa muuttujaan, joten voidaan tehdä seuraavasti:
+
+    axios.get('http://localhost:3001/notes').then(response => {
+        const notes = response.data
+        console.log(notes)
+    })
+
+Luettavampi tapa tälle olisi:
+
+    axios
+        .get('http://localhost:3001/notes')
+        .then(response => {
+            const notes = response.data
+            console.log(notes)
+        })
+
+Huomaa, että palvelimen palauttama data on pelkkää tekstiä, eli yksi iso merkkijono. Axios ossa kuitenkin parsia datan JavaScript-taulukoksi, sillä palvelin on kertonut headerin content-type avulla datan muodon olevan application/json; charset=utf-8. 
+
+Näiden avulla index.js muuttuu seuraavasti:
+
+    import React from 'react'
+    import ReactDOM from 'react-dom/client'
+
+    import App from './App'
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+
+Taas App.js muuttu muotoon:
+
+    import { useState, useEffect } from 'react'import axios from 'axios'
+    import Note from './components/Note'
+
+    const App = () => {
+        const [notes, setNotes] = useState([])  
+        const [newNote, setNewNote] = useState('')
+        const [showAll, setShowAll] = useState(true)
+
+        useEffect(() => {    
+            console.log('effect')    
+            axios      
+                .get('http://localhost:3001/notes')      
+                .then(response => {       
+                     console.log('promise fulfilled')        
+                     setNotes(response.data)      
+                })  
+        }, [])  
+        console.log('render', notes.length, 'notes')
+        // ...
+    }
+
+Huomaa, että tässä useEffect:in funktio suoritetaan heti renderöinnin jälkeen. Tämä saa aikaan sen, että axios.get aloittaa datan hakemisen palvelimelta sekä rekistöröi operaatiolle tapahtumakäsittelijäksi seuraavan funktion: 
+
+    response => {
+        console.log('promise fulfilled')
+        setNotes(response.data)
+    })
+
+Kun data saapuu palvelimelta, tämä funktio tulostaa konsoliin promise fulfilled ja talletnaa tilaan palvelimen palauttamat muistiinpanot funktiolla setNotes(response.data). Sen jälkeen komponentti uudelleen renderöityy, konsoliin tulostuu render 3 notes ja muistinpanot näkyvät ruudulla.
+
+Tämä useEffect muoto voidaan kirjoittaa myös seuraavasti:
+
+    const hook = () => {
+        console.log('effect')
+        axios
+            .get('http://localhost:3001/notes')
+            .then(response => {
+            console.log('promise fulfilled')
+            setNotes(response.data)
+        })
+    }
+
+    useEffect(hook, [])
+
+Näin huomataan, että oletusarvoisesti efekti suoritetaan aina sen jälkeen, kun komponentti renderöidään. Funktion useEffect toista parametria käytetään tarkentamaan sitä, miten usein efekti suoritetaan. Jos toisena parametrina on tyhjä taulukko [], suoritetaan efekti ainaoastaan kompoentin ensimmäisen renderöinnin jälkeen. Tämä koodi voidaan myös kirjoittaa seuraavasti:
+
+    useEffect(() => {
+        console.log('effect')
+
+        const eventHandler = response => {
+            console.log('promise fulfilled')
+            setNotes(response.data)
+        }
+
+        const promise = axios.get('http://localhost:3001/notes')
+        promise.then(eventHandler)
+    }, [])
 
