@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
+const Create = (newObject) => {
+  const request = axios.post('http://localhost:3001/persons', newObject)
+  return request.then(response => response.data)
+}
+
 const Filter = (props) => {
   const handleFilterChange = (event) => {
     props.setNewFilter(event.target.value)
@@ -39,11 +44,13 @@ const PersonForm = (props) => {
     }
 
     if (copyPerson === undefined) {
-      props.setPersons(props.persons.concat(personObject))
-      props.setNewName('')
-      props.setNewNumber('')
+      Create(personObject)
+        .then(returnedNote => {
+          props.setPersons(props.persons.concat(returnedNote))
+          props.setNewName('')
+          props.setNewNumber('')
+        })
     } 
-
   }
 
   return (

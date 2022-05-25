@@ -433,3 +433,155 @@ Näin huomataan, että oletusarvoisesti efekti suoritetaan aina sen jälkeen, ku
         promise.then(eventHandler)
     }, [])
 
+# Palvelimella olevan datan muokkauksesta
+
+Tarkastellaan mitä konventioita JSON server ja yleisimminkin REST API::t käyttävät reittien, eli URL:ien ja käytettävien HTTP-pyyntöjen tyyppien suhteen. REST:issä yksittäisiä asioita kutsutaan resursseiksi. Jokaisella niistä on yksilöivä osoite, eli URL. 
+
+JSON Serverin noudattaman yleisen konvention mukaan yksittäistä muistiinpanoa kuvaava resurssien URL on muotoa notes/3, missä 3 on resurssin tunniste ja osoite notes taas vastaa kaikkien yksittäisten muistiinpanojen kokoelmaa.
+
+Resursseja haetaan palvelimelta HTTP GET-pyynnöillä. Näin HTTP GET osoitteeseen notes/3 palauttaa muistiinapnot, jonka id-kentän arvo on 3. HTTP GET-pyyntö osoitteeseen notes palauttaa muistiinpanot.
+
+Uuden muistiinpanoa vastaavan resurssien luominen tapahtuu JSON Serverin noudattamassa REST-konventiossa tekemällä HTTP POST-pyyntö, joka kohdistuu myös samaan osoitteseen notes. JSON-serveri vaatii, että merkkijono on sopiva ja sen content-type on application/json.
+
+Tarkasteltua sovellusta voidaan muuttaa nyt seuraavasti:
+
+    const addNote = event => {
+        event.preventDefault()
+        const noteObject = {
+            content: newNote,
+            date: new Date().toISOString(),
+            important: Math.random() > 0.5,
+        }
+
+        axios    
+            .post('http://localhost:3001/notes', noteObject)    
+            .then(response => {      
+                setNotes(notes.concat(response.data))      
+                setNewNote('')   
+            })
+    }
+
+Huomaa, ettei tässä ole kenttää id, sillä on parempi jättää id:n generointi palvelimen vastuulle. 
+
+Lisätään tälle sovellukselle mahdollisuus muuttaa muistiinpanon tärkeys muuttamalla Note.js seuraavasti:
+
+    const Note = ({ note, toggleImportance }) => {
+        const label = note.important
+            ? 'make not important' : 'make important'
+
+        return (
+            <li>
+            {note.content} 
+            <button onClick={toggleImportance}>{label}</button>
+            </li>
+        )
+    }
+
+Lisätään vielä App.js:n seuraavat asiat:
+
+    const toggleImportanceOf = (id) => {    
+        const url = `http://localhost:3001/notes/${id}`
+        const note = notes.find(n => n.id === id)
+        const changedNote = { ...note, important: !note.important }
+
+        axios.put(url, changedNote).then(response => {
+            setNotes(notes.map(note => note.id !== id ? note : response.data))
+        })
+    }
+
+    <Note
+        key={note.id}
+        note={note} 
+        toggleImportance={() => toggleImportanceOf(note.id)}          
+    />
+
+Huomaa, että { ...note, important: !note.important } luo olion, jonka arvo important muutetaan käänteiseksi. Toisin sanoin se on shallow copy, jossa uuden olion kenttien arvoina on vanhan olion kenttien arvot. Tämä uusi muistiipano lähetetään palvelimelle, jossa se korvaa aiemman muistiinpanon.
+
+Toinen huomiotava asia on setNotes(notes.map(note => note.id !== id ? note : response.data)), joka luo taulukon uudet alkiot ehdon note.id !== id toteutuessa ja lisää palvelimen tuomat alkiot sen epätoteutuessa. 
+
+Koska App.js on kasvanut merkittävästi, niin Single responiblity periaatteen takia viisainta on eristää se omaan moduuliin, joten luodaan src/services ja sinne tiedosto notes.js. Tämän tiedoston muoto on seuraava:
+
+    import axios from 'axios'
+    const baseUrl = 'http://localhost:3001/notes'
+
+    const getAll = () => {
+        const request = axios.get(baseUrl)
+        return request.then(response => response.data)
+    }
+
+    const create = newObject => {
+        const request = axios.post(baseUrl, newObject)
+        return request.then(response => response.data)
+    }
+
+    const update = (id, newObject) => {
+        const request = axios.put(`${baseUrl}/${id}`, newObject)
+        return request.then(response => response.data)
+    }
+
+    export default { 
+        getAll: getAll, 
+        create: create, 
+        update: update 
+    }
+
+Nyt App.js voidaan muuttaa seuraavasti:
+
+    import noteService from './services/notes'  
+
+    useEffect(() => {
+        noteService      
+        .getAll()      
+        .then(response => {        
+            setNotes(response.data)      
+        })  
+    }, [])
+
+    noteService      
+        .update(id, changedNote)      
+        .then(response => {        
+            setNotes(notes.map(note => note.id !== id ? note : response.data)      
+        })
+
+    noteService      
+        .create(noteObject)      
+        .then(response => {        
+            setNotes(notes.concat(response.data))        
+            setNewNote('')      
+        })
+
+Tässä axios ei suoraan palauta promisea, vaan promise otetaan ensin muuttujana request ja sille kutsutaan then, joka saa palauttaessaan promisen getAll:in palauttamaan promisen. Koska then:in parametri palauttaa response.data, niin getAll:in promise antaa onnistuessaan HTTP-pynnön mukana olleen datan.
+
+Näin App.js:n saa haluamansa datan, eikä sen tarvitse huolehtia HTTP-pyynnöistä. Näin se pystyy keskittymään sen muokkaukseen, jonka se tekee useEffect() käyttäessä .getAll() asettamaan tilan, toggleImportance .update() päivittämään ja addNote .create() luomaan muistiinpanoja.
+
+Huomaa, että notes.js eksporttaa olion, joka on muodoltaan { getAll: getAll, create: create, update: update }. Tässä vasemmalla puoella olevat nimet ovat kenttiä ja oikealla puolella olevat nimet määriteltyjä muuttujia. Tämä voidaan ES6 avulla kirjoittaa tiivisti { getAll, create, update }.
+
+Tällä hetkellä sovellus ei huolehdi siitä tapauksesta, jossa promise saa tilan rejected. Tämä voidaan korjata seuraavalla tavalla:
+
+    axios
+        .get('http://example.com/probably_will_fail')
+        .then(response => {
+            console.log('success!')
+        })
+        .catch(error => {
+            console.log('fail')
+        })
+
+Tässä pyynnön epäonnistuessa catch metodi aktivoituu. Se yleensä sijoitetaan syvemmälle promiseketjuun, sillä se huolehti minkä tahansa ketjun promisen epäonnistumisesta. Näin App.js voidaan sijoittaa seuraava asia poistosta huolehtivaan funktioon:
+
+    const toggleImportanceOf = id => {
+    const note = notes.find(n => n.id === id)
+    const changedNote = { ...note, important: !note.important }
+
+    noteService
+        .update(id, changedNote).then(returnedNote => {
+            setNotes(notes.map(note => note.id !== id ? note : returnedNote))
+        })
+        .catch(error => {      
+            alert(        
+                `the note '${note.content}' was already deleted from server`      
+            )      
+            setNotes(notes.filter(n => n.id !== id))    
+        })
+    }
+
