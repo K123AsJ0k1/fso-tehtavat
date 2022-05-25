@@ -67,14 +67,27 @@ const PersonForm = (props) => {
 }
 
 const Persons = (props) => {
+  const handleButtonClick = event => {
+    if (window.confirm(`Delete ${event.target.name}`)) {
+      numberService.deletePerson(event.target.id)
+      let new_array = []
+      props.persons.forEach(item => {
+        if (item.id != event.target.id) {
+          new_array.push(item)
+        }
+      })
+      props.setPersons(new_array)
+    }
+  }
+  
   const numberList = props.persons.map(person => 
     person.name.toLowerCase().includes(props.newFilter.toLowerCase())
     ? 
-    <p key = {person.name}>
-      {person.name} {person.number}
+    <p key = {person.id}>
+      {person.name} {person.number} <button name = {person.name} id = {person.id} onClick={handleButtonClick}>delete</button>
     </p> 
     : 
-    <p key = {person.name}/> 
+    <p key = {person.id}/> 
   )
 
   return (
@@ -122,6 +135,7 @@ const App = () => {
 
       <Persons 
         persons = {persons}
+        setPersons = {setPersons}
         newFilter = {newFilter}
         />
     </div>
