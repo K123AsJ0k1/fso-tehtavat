@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import numberService from './services/numbers'
+import personService from './services/persons'
 
 const Filter = (props) => {
   const handleFilterChange = (event) => {
@@ -30,7 +30,29 @@ const PersonForm = (props) => {
     const copyPerson = props.persons.find(person => person.name === props.newName)
     
     if (!(copyPerson === undefined)) {
-      alert(`${props.newName} is already added to phonebook`)
+      if (copyPerson.number == props.newNumber) {
+        alert(`${props.newName} is already added to phonebook`)
+        return 0
+      }
+
+      if (window.confirm(`${props.newName} is already added to phonebook, replace the old number with a new one?`)) {
+        const updatedPersonObject = {
+          name: props.newName,
+          number: props.newNumber,
+          id: copyPerson.id
+        }
+        personService.updatePerson(copyPerson.id,updatedPersonObject)
+
+        let new_array = []
+        props.persons.forEach(item => {
+          if (item.id == copyPerson.id) {
+            new_array.push(updatedPersonObject)
+            return
+          }
+          new_array.push(item)
+        })
+        props.setPersons(new_array)
+      }
       return 0
     }
 
@@ -40,8 +62,8 @@ const PersonForm = (props) => {
     }
 
     if (copyPerson === undefined) {
-      numberService
-        .create(personObject)
+      personService
+        .createPerson(personObject)
         .then(returnedNote => {
           props.setPersons(props.persons.concat(returnedNote))
           props.setNewName('')
@@ -69,7 +91,7 @@ const PersonForm = (props) => {
 const Persons = (props) => {
   const handleButtonClick = event => {
     if (window.confirm(`Delete ${event.target.name}`)) {
-      numberService.deletePerson(event.target.id)
+      personService.deletePerson(event.target.id)
       let new_array = []
       props.persons.forEach(item => {
         if (item.id != event.target.id) {
