@@ -2,15 +2,22 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import personService from './services/persons'
 
-const Notification = ({ message }) => {
-  if (message === null) {
-    return null
+const Notification = (props) => {
+  if (props.messageType == 1) {
+    return (
+      <div className="success">
+        {props.message}
+      </div>
+    )
   }
-  return (
-    <div className="error">
-      {message}
-    </div>
-  )
+  if (props.messageType == 2) {
+    return (
+      <div className="failure">
+        {props.message}
+      </div>
+    )
+  }
+  return null
 }
 
 const Filter = (props) => {
@@ -52,18 +59,30 @@ const PersonForm = (props) => {
           number: props.newNumber,
           id: copyPerson.id
         }
-        personService.updatePerson(copyPerson.id,updatedPersonObject)
-
-        let new_array = []
-        props.persons.forEach(item => {
-          if (item.id === copyPerson.id) {
-            new_array.push(updatedPersonObject)
-            return
-          }
-          new_array.push(item)
-        })
-        props.setPersons(new_array)
-        props.setErrorMessage(`Updated ${props.newName}'s number`)
+        
+        let update_failed = false
+        personService
+          .updatePerson(copyPerson.id,updatedPersonObject)
+          .catch(error => {
+            update_failed = true
+            props.setPersons(props.persons.filter(n => n.id !== copyPerson.id))
+            props.setMessage(`Information of ${props.newName} has already been removed from server`)
+            props.setMessageType(2)
+          })
+        
+        if (!update_failed) {
+          let new_array = []
+          props.persons.forEach(item => {
+            if (item.id === copyPerson.id) {
+              new_array.push(updatedPersonObject)
+              return
+            }
+            new_array.push(item)
+          })
+          props.setPersons(new_array)
+          props.setMessage(`Updated ${props.newName}'s number`)
+          props.setMessageType(1)
+        } 
       }
       return 0
     }
@@ -80,7 +99,8 @@ const PersonForm = (props) => {
           props.setPersons(props.persons.concat(returnedNote))
           props.setNewName('')
           props.setNewNumber('')
-          props.setErrorMessage(`Added ${personObject.name}`)
+          props.setMessage(`Added ${personObject.name}`)
+          props.setMessageType(1)
         })
     } 
   }
@@ -112,7 +132,8 @@ const Persons = (props) => {
         }
       })
       props.setPersons(new_array)
-      props.setErrorMessage(`Deleted ${event.target.name}`)
+      props.setMessage(`Deleted ${event.target.name}`)
+      props.setMessageType(1)
     }
   }
   
@@ -138,7 +159,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [message, setMessage] = useState(null)
+  const [messageType, setMessageType] = useState(0)
 
   useEffect(() => {
     axios
@@ -150,18 +172,19 @@ const App = () => {
 
   useEffect(() => {
     const timeId = setTimeout(() => {
-      setErrorMessage(null)
-    }, 3000)
+      setMessage(null)
+      setMessageType(0)
+    }, 5000)
     return () => {
       clearTimeout(timeId)
     }
-  }, [errorMessage])
+  }, [message])
   
   return (
     <div>
       <h2>Phonebook</h2>
 
-      <Notification message={errorMessage}/>
+      <Notification message={message} messageType = {messageType}/>
       
       <Filter 
         setNewFilter = {setNewFilter}
@@ -176,7 +199,8 @@ const App = () => {
         setNewName = {setNewName} 
         newNumber = {newNumber} 
         setNewNumber = {setNewNumber}
-        setErrorMessage = {setErrorMessage}
+        setMessage = {setMessage}
+        setMessageType = {setMessageType}
       />
 
       <h3>Numbers</h3>
@@ -185,7 +209,8 @@ const App = () => {
         persons = {persons}
         setPersons = {setPersons}
         newFilter = {newFilter}
-        setErrorMessage = {setErrorMessage}
+        setMessage = {setMessage}
+        setMessageType = {setMessageType}
         />
     </div>
   )
