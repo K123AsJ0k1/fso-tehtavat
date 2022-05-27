@@ -585,3 +585,100 @@ Tässä pyynnön epäonnistuessa catch metodi aktivoituu. Se yleensä sijoitetaa
         })
     }
 
+# Tyylien lisääminen React-sovellukseen
+
+Vanhan kansan tapa liittää CSS:n React sovelluksene on yksittäisenä tiedostona. Tämä voidaan tehdä tarkastellussa sovelluksessa luomalla hakemistoon src tiedosto index.css ja liittämällä se sovellukseen importoimalla se index.js tiedostossa seuraavasti:
+
+    import './index.css'
+
+Huomaa, että kun index.js lisätään sisältöä, React ei välttämättä havaitse muutosta ilman selaimen refressausta. Lisätään nyt index.css seuraava sääntö:
+
+    h1 {
+        color: green;
+    }
+
+CSS-säännöt koostuvat valitsimesta (selektori) ja määrittelystä (deklaraatiosta). Valitsin määrittelee, mihin elementteihin sääntö kohdistuu. Määrittelyosa asettaa ominaisuuden color eli fontin värin arvoksi vihreän. Sääntö voi sisältää mielivaltaisen määrän määrittelyjä. Lisätään tähän sääntöön tekstin kursivointi:
+
+    h1 {
+        color: green;
+        font-style: italic;
+    }
+
+Huomaa, että jos haluamme kohdistaa tyylejä jokaiseen muistiinpanoon, voisimme käyttää selektroia li. Näin voidaan tehdä seuraavasti:
+
+    li {
+        color: grey;
+        padding-top: 3px;
+        font-size: 15px;
+    }
+
+Tämä voi olla tosin ongelmallista, sillä jos sovelluksessa on muita li-tageja, niin kaikki saavat samat tyylit. Meidän on tästä syystä kohdistettava tyylit class selektoreihin, jotka Reactissa voidaan luoda seuraavasti:
+
+    <li className='note'>
+
+Tämän luokkaselektori voidaan määritellä seuraavasti:
+
+    .note {
+        color: grey;
+        padding-top: 5px;
+        font-size: 15px;
+    }
+
+Muutetaan tätä sovelluksen virheilmoitukset komponentin
+
+    const Notification = ({ message }) => {
+        if (message === null) {
+            return null
+        }
+
+        return (
+            <div className="error">
+            {message}
+            </div>
+        )
+    }
+
+huolehtimaksi, lisätään tila
+
+    const [errorMessage, setErrorMessage] = useState('some error happened...')
+
+App:in, laitetaan komponentti 
+
+    <Notification message={errorMessage} />
+
+App:in returnin sisälle, laitetaan virheviesteille tyyli
+
+    .error {
+        color: red;
+        background: lightgrey;
+        font-size: 20px;
+        border-style: solid;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+ja muutetaan toggleImporanceOf metodia seuraavasti:
+
+    .catch(error => {
+        setErrorMessage(          
+            `Note '${note.content}' was already removed from server`        
+        )        
+        setTimeout(() => {          
+            setErrorMessage(null)        
+        }, 5000)        
+        setNotes(notes.filter(n => n.id !== id))
+        })
+    })
+
+React mahdollistaa tyylien kirjoittamisen myös suoraan komponenttien koodien joukkoon niin sanoittuina inline-tyyleinä, sillä mihin tahansa React-komponenttiin tai elementtiin voi liittää attribuutin style, jolle annetaan arvoksi JavaScript-oliona määritelty joukko CSS-sääntöjä. Reactin inline-tyyli määritellään oliona seuraavasti:
+
+    {
+        color: 'green',
+        fontStyle: 'italic',
+        fontSize: 16
+    }
+
+Huomaa, että merkittävin ero on ominaisuuksien kirjoittaminen camelCase muodossa. Lisäksi Inline-tyyleillä on tiettyjä rajoituksia, esim ns pseudo-selektrojea ei ole mahdollistuutta käyttää. On myös suositeltavaa siitä mahdollisimman riippumaton ja yleiskäyttöinen, sillä se taistelee vanhoja hyviä periaateita vastaan.
+
+---
