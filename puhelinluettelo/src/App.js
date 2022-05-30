@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import personService from './services/persons'
+const baseUrl = '/api/persons'
 
 const Notification = (props) => {
   if (props.messageType == 1) {
@@ -168,7 +169,7 @@ const App = () => {
 
   useEffect(() => {
     axios
-        .get('http://localhost:3001/api/persons')
+        .get(baseUrl)
         .then(response => {
           setPersons(response.data)
         })
