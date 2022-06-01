@@ -12,4 +12,13 @@ Osa 1
 
 ![Tehtävät 1.12-1.14](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%201/Teht%C3%A4v%C3%A4t/anekdootit)
 
+Osa 2
+
+![Tehtävät 2.1-2.5](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%202/Teht%C3%A4v%C3%A4t/kurssitiedot)
+
+![Tehtävät 2.6-2.11,2.15-2.20](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%202/Teht%C3%A4v%C3%A4t/puhelinluettelo)
+
+![Tehtävät 2.12-2.13](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%202/Teht%C3%A4v%C3%A4t/maiden)
+
+
 
