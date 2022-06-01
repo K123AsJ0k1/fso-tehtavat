@@ -22,11 +22,12 @@ Osa 2
 
 Osa 3
 
+![Tehtävät 3.1-3.22](https://github.com/K123AsJ0k1/fso-ts-3)
+
+Tai
+
 ![Puhelinluettelo backend](https://github.com/K123AsJ0k1/fso-ts-3)
 
 ![Puhelinluettelo frontend](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%203/Teht%C3%A4v%C3%A4t/puhelinluettelo)
 
 ![Puhelinluettelo fullstack](https://fso-pl.herokuapp.com/)
-
-
-
