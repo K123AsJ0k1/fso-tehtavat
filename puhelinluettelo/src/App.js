@@ -50,7 +50,7 @@ const PersonForm = (props) => {
     
     if (!(copyPerson === undefined)) {
       if (copyPerson.number === props.newNumber) {
-        alert(`${props.newName} is already added to phonebook`)
+        alert(`Info of ${props.newName} is already added to phonebook`)
         return 0
       }
 
@@ -61,29 +61,17 @@ const PersonForm = (props) => {
           id: copyPerson.id
         }
         
-        let update_failed = false
         personService
           .updatePerson(copyPerson.id,updatedPersonObject)
+          .then(persons => {
+            props.setPersons(persons)
+            props.setMessage(`Updated ${props.newName}'s number`)
+            props.setMessageType(1)
+          })
           .catch(error => {
-            update_failed = true
-            props.setPersons(props.persons.filter(n => n.id !== copyPerson.id))
-            props.setMessage(`Information of ${props.newName} has already been removed from server`)
+            props.setMessage(error.response.data.error)
             props.setMessageType(2)
           })
-        
-        if (!update_failed) {
-          let new_array = []
-          props.persons.forEach(item => {
-            if (item.id === copyPerson.id) {
-              new_array.push(updatedPersonObject)
-              return
-            }
-            new_array.push(item)
-          })
-          props.setPersons(new_array)
-          props.setMessage(`Updated ${props.newName}'s number`)
-          props.setMessageType(1)
-        } 
       }
       return 0
     }
