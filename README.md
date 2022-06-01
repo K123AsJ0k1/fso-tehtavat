@@ -20,5 +20,13 @@ Osa 2
 
 ![Tehtävät 2.12-2.13](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%202/Teht%C3%A4v%C3%A4t/maiden)
 
+Osa 3
+
+![Puhelinluettelo backend](https://github.com/K123AsJ0k1/fso-ts-3)
+
+![Puhelinluettelo frontend](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%203/Teht%C3%A4v%C3%A4t/puhelinluettelo)
+
+![Puhelinluettelo fullstack](https://fso-pl.herokuapp.com/)
+
 
 
