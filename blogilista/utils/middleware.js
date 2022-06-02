@@ -1,14 +1,4 @@
 const logger = require('./logger')
-//const morgan = require('morgan')
-// eslint-disable-next-line no-unused-vars
-/*
-morgan.token('body', (req, res) => {
-  if (req.method === 'POST') {
-    return JSON.stringify(req.body)
-  }
-  return ''
-})
-*/
 
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method)
