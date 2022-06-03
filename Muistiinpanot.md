@@ -135,3 +135,50 @@ Tässä sovelluksessa on käytetty kahta tapaa exportata, jotka ovat:
 Taas seuraavassa exportataan ainoastaan yksi asia:
 
     module.exports = notesRouter
+
+Tähän mennessä on laiminlyöty kokonaan automatisoitua testaamista, joten tarkastellaan sen luomista Node-sovelluksille. Tulemme käyttämään JavaScriptin testikirjastoa Jest:iä, sillä se sopii backendin ja reactin testaamiseen. Huomaa, että jest ei välttämättä toimi windowsilla, jos projektin hakemisto polulla on hakemisto, jonka nimessä on välilyöntejä. Jest voidaan asentaa komennolla npm install --save-dev jest. Asennuksen jälkeen määritellään sen suoritus skriptiksi:
+
+    "test": "jest --verbose"
+
+Jestille on lisäksi kerrottava, mikä suoritusympäristö on käytössä, joten asetetaan:
+
+    "jest": {
+        "testEnvironment": "node"
+    }
+
+Huomaa, että ESLint tulee valittamaan testien komennoista, joten poistetaan se lisäämällä .eslintrc.js-tiedostoon env arvo "jest":true:
+
+    'env': {
+        'commonjs': true,
+        'es2021': true,
+        'node': true,
+        'jest': true,  
+    },
+
+Yksittäisen testitapauksen funktio voisi olla seuraava:
+
+    () => {
+        const result = reverse('react')
+
+        expect(result).toBe('tcaer')
+    }
+
+Tässä ensiksi generoidaan react palidromi, jonka jälkeen tulos testataan exprect funktion avulla. Huomaa, että jest olettaa testitiedoston nimessä olevan merkkijono .test, minkä takia tällä kurssilla testitiedostojen nimen loppu on .test.js. Yksittäistä metodia voidaan testata eri tavoilla seuraavasti:
+
+    const average = require('../utils/for_testing').average
+
+    describe('average', () => {
+        test('of one value is the value itself', () => {
+            expect(average([1])).toBe(1)
+        })
+
+        test('of many is calculated right', () => {
+            expect(average([1, 2, 3, 4, 5, 6])).toBe(3.5)
+        })
+
+        test('of empty array is zero', () => {
+            expect(average([])).toBe(0)
+        })
+    })
+
+Tässä decribe-lohkon avulla luotiin looginen kokonaisuus nimeltään average, joka testattiin kolmella eri testillä. Huomaa se, että testit on kirjoitettu tiivimmässä muodossa, eli niissä ei otettu metodin tulosta erikseen apumuuttujaan. 
