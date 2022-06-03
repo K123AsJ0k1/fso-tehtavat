@@ -118,7 +118,6 @@ const mostLikes = (blogs) => {
       }
     }
   })
-  console.log(most_likes)
   return most_likes
 }
 
