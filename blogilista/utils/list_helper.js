@@ -53,8 +53,45 @@ const favoriteBlog = (blogs) => {
   return favorite
 }
 
+// eslint-disable-next-line no-unused-vars
+const mostBlogs = (blogs) => {
+  let most_blogs = {
+    author: '',
+    blogs: 0
+  }
+  let multiple = false
+  Object.keys(blogs).forEach(key => {
+    if (key === 'likes') {
+      most_blogs.author = blogs.author
+      most_blogs.blogs = 1
+    }
+    if (key === '0') {
+      multiple = true
+    }
+    if (multiple) {
+      const check_blogs = blogs
+      let blog_author = blogs[key].author
+      let blog_sum = 0
+
+      Object.keys(check_blogs).forEach(check_key => {
+        if (blog_author === check_blogs[check_key].author) {
+          blog_sum = blog_sum + 1
+        }
+      })
+
+      if (most_blogs.blogs < blog_sum) {
+        most_blogs.author = blog_author
+        most_blogs.blogs = blog_sum
+      }
+    }
+  })
+  console.log(most_blogs)
+  return most_blogs
+}
+
 module.exports = {
   dummy,
   totalLikes,
-  favoriteBlog
+  favoriteBlog,
+  mostBlogs
 }
