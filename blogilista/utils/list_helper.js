@@ -61,7 +61,7 @@ const mostBlogs = (blogs) => {
   }
   let multiple = false
   Object.keys(blogs).forEach(key => {
-    if (key === 'likes') {
+    if (key === 'author') {
       most_blogs.author = blogs.author
       most_blogs.blogs = 1
     }
@@ -85,13 +85,47 @@ const mostBlogs = (blogs) => {
       }
     }
   })
-  console.log(most_blogs)
   return most_blogs
+}
+
+// eslint-disable-next-line no-unused-vars
+const mostLikes = (blogs) => {
+  let most_likes = {
+    author: '',
+    likes: 0
+  }
+  let multiple = false
+  Object.keys(blogs).forEach(key => {
+    if (key === 'likes') {
+      most_likes.author = blogs.author
+      most_likes.likes = blogs.likes
+    }
+    if (key === '0') {
+      multiple = true
+    }
+    if (multiple) {
+      const check_blogs = blogs
+      let like_author = blogs[key].author
+      let like_sum = 0
+      Object.keys(check_blogs).forEach(check_key => {
+        if (like_author === check_blogs[check_key].author) {
+          like_sum = like_sum + check_blogs[check_key].likes
+        }
+      })
+      if (most_likes.likes < like_sum) {
+        most_likes.author = like_author
+        most_likes.likes = like_sum
+      }
+    }
+  })
+  console.log(most_likes)
+  return most_likes
 }
 
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
-  mostBlogs
+  mostBlogs,
+  mostLikes
 }
