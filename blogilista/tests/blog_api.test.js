@@ -70,6 +70,30 @@ test('the indentification of returned blogs is defined as id', async () => {
   expect(res.body[0].id).toBeDefined()
 })
 
+test('a valid blog can be added', async () => {
+  const test_blog = {
+    title: 'Title',
+    author: 'Author',
+    url: 'Url',
+    likes: 0
+  }
+
+  await api.post('/api/blogs')
+    .send(test_blog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const res = await api.get('/api/blogs')
+  const titles = res.body.map(blog => blog.title)
+  const authors = res.body.map(blog => blog.author)
+  const urls = res.body.map(blog => blog.url)
+
+  expect(res.body).toHaveLength(initialBlogs.length + 1)
+  expect(titles).toContain(test_blog.title)
+  expect(authors).toContain(test_blog.author)
+  expect(urls).toContain(test_blog.url)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
