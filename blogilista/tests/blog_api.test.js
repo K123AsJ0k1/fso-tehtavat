@@ -80,7 +80,7 @@ test('a valid blog can be added', async () => {
 
   await api.post('/api/blogs')
     .send(test_blog)
-    .expect(201)
+    .expect(200)
     .expect('Content-Type', /application\/json/)
 
   const res = await api.get('/api/blogs')
@@ -115,6 +115,40 @@ test('no existent title and url returns bad request', async () => {
   await api.post('/api/blogs')
     .send(incomplete_blog)
     .expect(400)
+})
+
+test('deletion of a blog', async () => {
+  let res = await api.get('/api/blogs')
+  const blogsAtStart = res.body
+  const blogToDelete = blogsAtStart[0]
+
+  await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .expect(204)
+
+  res = await api.get('/api/blogs')
+  const blogsAtEnd = res.body
+  expect(blogsAtEnd).toHaveLength(blogsAtStart.length-1)
+
+  const ids = blogsAtEnd.map(blog => blog.id)
+  expect(ids).not.toContain(blogToDelete.id)
+})
+
+test('update of a blog', async () => {
+  let res = await api.get('/api/blogs')
+  const blogsAtStart = res.body
+
+  let updatedBlog = blogsAtStart[0]
+  updatedBlog.likes = 1000
+
+  await api
+    .put(`/api/blogs/${updatedBlog.id}`)
+    .send(updatedBlog)
+    .expect(200)
+
+  res = await api.get('/api/blogs')
+  const blogsAtEnd = res.body
+  expect(blogsAtEnd[0].likes).toBe(1000)
 })
 
 afterAll(() => {

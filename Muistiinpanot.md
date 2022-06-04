@@ -388,3 +388,6 @@ On suositeltavaa olla tarkkana async/await kanssa, sillä asynkroninen suoritusm
         await Note.deleteMany({})
         await Note.insertMany(helper.initialNotes)
     })
+
+Testeissä parempaan luettavuuteen päästään eritellessä loogisesti toisiinsa liittyvät testit describe lohkoihin. Huomaa, että tässä käytetty tapa ei ole ainoa tai edes paras tapa, sillä universaalia tapaa testaamiseen ei ole. Tämän takia on suositeltavaa huomioda käytettävät resurssit ja itse sovellus testauksen suunnitelussa.
+
