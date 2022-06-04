@@ -107,6 +107,16 @@ test('null likes is 0', async () => {
   expect(likes[res.body.length-1]).toBe(0)
 })
 
+test('no existent title and url returns bad request', async () => {
+  const incomplete_blog = {
+    author: 'Empty',
+    likes: null
+  }
+  await api.post('/api/blogs')
+    .send(incomplete_blog)
+    .expect(400)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
