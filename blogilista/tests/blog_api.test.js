@@ -94,6 +94,19 @@ test('a valid blog can be added', async () => {
   expect(urls).toContain(test_blog.url)
 })
 
+test('null likes is 0', async () => {
+  const null_blog = {
+    title: 'Null_like',
+    author: 'Null_like',
+    url: 'Null_like',
+    likes: null
+  }
+  await api.post('/api/blogs').send(null_blog)
+  const res = await api.get('/api/blogs')
+  const likes = res.body.map(blog => blog.likes)
+  expect(likes[res.body.length-1]).toBe(0)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
