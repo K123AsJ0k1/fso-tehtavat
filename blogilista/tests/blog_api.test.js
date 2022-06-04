@@ -65,6 +65,11 @@ test('correct amount of blogs is returned', async () => {
   expect(res.body).toHaveLength(initialBlogs.length)
 })
 
+test('the indentification of returned blogs is defined as id', async () => {
+  const res = await api.get('/api/blogs')
+  expect(res.body[0].id).toBeDefined()
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
