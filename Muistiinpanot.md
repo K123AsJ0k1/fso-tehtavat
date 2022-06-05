@@ -391,3 +391,189 @@ On suositeltavaa olla tarkkana async/await kanssa, sillä asynkroninen suoritusm
 
 Testeissä parempaan luettavuuteen päästään eritellessä loogisesti toisiinsa liittyvät testit describe lohkoihin. Huomaa, että tässä käytetty tapa ei ole ainoa tai edes paras tapa, sillä universaalia tapaa testaamiseen ei ole. Tämän takia on suositeltavaa huomioda käytettävät resurssit ja itse sovellus testauksen suunnitelussa.
 
+# Käyttäjien hallinta
+
+Tarkastellaan seuraavaksi, miten sovellukselle voidaan luoda käyttäjä, jotka kykenevät editoimaan ja poistamaan heidän luomia muistiipanoja. Ensi on lisättävä tietokantaan tieto käyttäjistä, mikä ei ole yhtä yksinkertaista dokumenttikannoissa kuin relaatiokannoissa, sillä eri ratkaisuja on useita. Nykyisessä ratkaisussa kokoelmassa users olevat käyttäjät pystyvät luomaan kokoelmassa notes olevia heihin id:n kautta liitettyjä muistiinpanoja, mutta liitoskyselyt on tehtävä sovelluksessa. Yksi tapa määritellä käyttäjä on:
+
+    const mongoose = require('mongoose')
+
+    const userSchema = mongoose.Schema({
+        username: String,
+        name: String,
+        passwordHash: String,
+        notes: [
+            {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Note'
+            }
+        ],
+    })
+
+    userSchema.set('toJSON', {
+        transform: (document, returnedObject) => {
+            returnedObject.id = returnedObject._id.toString()
+            delete returnedObject._id
+            delete returnedObject.__v
+            // the passwordHash should not be revealed
+            delete returnedObject.passwordHash
+        }
+    })
+
+    const User = mongoose.model('User', userSchema)
+
+    module.exports = User
+
+Tässä käyttäjällä on siis username, name, passwordHash ja notes kokoelman id:eitä sisältävä taulukko. Huomaa, että salasanat on kryptattava, jonka takia on asennettaan bcrypt-kirjasto komennolla npm install bcrypt. Uusi käyttäjä voidaan lisätä seuraavasti:
+
+    const bcrypt = require('bcrypt')
+    const usersRouter = require('express').Router()
+    const User = require('../models/user')
+
+    usersRouter.post('/', async (request, response) => {
+        const { username, name, password } = request.body
+
+        const saltRounds = 10
+        const passwordHash = await bcrypt.hash(password, saltRounds)
+
+        const user = new User({
+            username,
+            name,
+            passwordHash,
+        })
+
+        const savedUser = await user.save()
+
+        response.status(201).json(savedUser)
+    })
+
+    module.exports = usersRouter
+
+Nyt muistiinpanojen lisäys muuttuu seuraavasti:
+
+    const User = require('../models/user')
+
+    //...
+
+    notesRouter.post('/', async (request, response, next) => {
+        const body = request.body
+
+        const user = await User.findById(body.userId)
+        const note = new Note({
+            content: body.content,
+            important: body.important === undefined ? false : body.important,
+            date: new Date(),
+            user: user._id  })
+
+        const savedNote = await note.save()
+        user.notes = user.notes.concat(savedNote._id)  await user.save()
+        response.json(savedNote)
+    })
+
+Jos halutaan tehdä liitoskyselyitä, niin mongoose antaa ratkaisun tähän populate metodilla. Huomaa, että tämä liitos ei ole konsisentti, eli kokoelmien tila saattaa muuttua kesken liitosoperaatioiden. Sen toiminnallisuus perustuu siihen, että olemme määritelleet viitteiden tyypit olioiden Mongoose-skemaan ref-kentän avulla. Liitoskysely voidaan tehdä seuraavasti:
+
+    notesRouter.get('/', async (request, response) => {
+        const notes = await Note
+            .find({}).populate('user', { username: 1, name: 1 })
+
+        response.json(notes)
+    });
+
+# Token-perustainen kirjautuminen
+
+Tarkastellaan nyt tokenin avulla tehtävää kirjautumista. Siinä kirjautuneelle käyttäjälle luodaan digitaalisesti allekirjoitettu token, joka varastoidaan react sovelluksen tilaan. Sitä hyödynnettään yksilöimään käyttäjiä ja sen avulla react sovellus kykenee lähettämään pyyntöjä, jotka palvelin tunnistaa. Kirjautumiseen tarvitaan kirjasto jsonwebtoken, joka voidaan asentaa komennolla npm install jsonwebtoken. Sen avulla luotu tiedosto voi olla muodoltaa:
+
+    const jwt = require('jsonwebtoken')
+    const bcrypt = require('bcrypt')
+    const loginRouter = require('express').Router()
+    const User = require('../models/user')
+
+    loginRouter.post('/', async (request, response) => {
+        const { username, password } = request.body
+
+        const user = await User.findOne({ username })
+        const passwordCorrect = user === null
+            ? false
+            : await bcrypt.compare(password, user.passwordHash)
+
+        if (!(user && passwordCorrect)) {
+            return response.status(401).json({
+            error: 'invalid username or password'
+            })
+        }
+
+        const userForToken = {
+            username: user.username,
+            id: user._id,
+        }
+
+        const token = jwt.sign(userForToken, process.env.SECRET)
+
+        response
+            .status(200)
+            .send({ token, username: user.username, name: user.name })
+    })
+
+    module.exports = loginRouter
+
+Tässä ensiksi tarkastetaan bcrypt.comparen avulla salasana, jonka onnistuessa token luodaan käyttäjän osatietojen ja ympäristömuuttujan SECRET avulla. Nyt muistiinapanojen luonti muuttuu seuraavaan muotoon:
+
+    const jwt = require('jsonwebtoken')
+    // ...
+    const getTokenFrom = request => {  
+        const authorization = request.get('authorization')  
+        if (authorization && authorization.toLowerCase().startsWith('bearer ')) {    
+            return authorization.substring(7)  
+        }  
+        return null
+    }
+
+    notesRouter.post('/', async (request, response) => {
+        const body = request.body
+        const token = getTokenFrom(request)  const decodedToken = jwt.verify(token, process.env.SECRET)  
+        if (!token || !decodedToken.id) {    
+            return response.status(401).json({ error: 'token missing or invalid' })  
+        }  
+        const user = await User.findById(decodedToken.id)
+        
+        const note = new Note({
+        content: body.content,
+        important: body.important === undefined ? false : body.important,
+        date: new Date(),
+        user: user._id
+    })
+
+    const savedNote = await note.save()
+    user.notes = user.notes.concat(savedNote._id)
+    await user.save()
+
+    response.json(savedNote.toJSON())
+    })
+
+Tässä tokenin dekoodattu olio kertoo, kuka pyynnön on palvelimelle tehnyt, jonka jälkeen suoritus jatkuu. Huomaa, että token voi olla viallinen, väärennetty tai vanhentunut, minkä takia on osattava käsitellä tarkastuksen aiheuttamat virheet. Tämä voidaan tehdä lisäämällä errorHandler middlewaren seuraava asia:
+
+    else if (error.name === 'JsonWebTokenError') {    
+        return response.status(401).json({      
+            error: 'invalid token'    
+        })
+    }
+
+Jos sovelluksessa on useita rajapintoja, jotka vaativat kirjautumisen, niin JWT validointi kannattaa eriyttää omaksi middlewareksi tai käyttää kirjastoa kuten express-jwt. Token ei tosin ole täydellinen ratkaisu, sillä API luottaa sokeasti siihen, minkä takia tämän korjaamiseen on kaksi eri ratkaisua. Ensimmäisessä tokenilla on voimassaoloaika, joka voidaan lisätä seuraavasti:
+
+    const token = jwt.sign(    
+        userForToken,     
+        process.env.SECRET,    
+        { expiresIn: 60*60 }  
+    )
+
+Tässä tapauksessa errorHandler on laajennettava seuraavasti:
+
+    else if (error.name === 'TokenExpiredError') {    
+        return response.status(401).json({      
+            error: 'token expired'    
+        })  
+    }
+
+Toinen ratkaisu on palvelinpuolen sessio, eli API tallentaa tietokantaan tiedon jokaisesta tokenista ja tarkastaa jokaisen pyynnön aikana, onko se edelleen oikeutettu. Tämän avulla tokenin voimassaolo voidaan tarvittaessa välittömästi poistaa. Tosin tämä lisää backendin monimutkaisuutta ja suorituskyky huononee hieman. Tätä yritetään välttää tallentamalla tokenin redis-tietokantaan, joka toimii avain-arvo periaatteella. Huomaa, ettei token usein sisällä mitään tietoa käyttäjästä, vaan se voi olla satunnainen merkkijono.
+
+Lopuksi, käyttäjätunnuksia, salasanoja ja tokenautentikaatioita käyttävät sovellukset tulee aina käyttää HTTPS yhteyksiä. Nodessa tämä vaatisi lisää konfiguraatiotia, mutta käyttäessämme Herokua tämä ei ole välttämätöntä, sillä Heroku reitittää liikenteen selaimen ja Herokun palvelimien välillä HTTPS yhteyksien avulla.
+
