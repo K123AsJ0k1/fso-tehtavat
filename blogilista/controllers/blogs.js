@@ -29,7 +29,6 @@ blogsRouter.post('/', async (request, response) => {
     body.likes = 0
   }
 
-  //const token = getTokenFrom(request)
   // eslint-disable-next-line no-undef
   const decodedToken = jwt.verify(request.token, process.env.SECRET)
 
@@ -38,14 +37,6 @@ blogsRouter.post('/', async (request, response) => {
       error : 'token missing or invalid'
     })
   }
-
-  /*
-  if (!token || !decodedToken.id) {
-    return response.status(401).json({
-      error : 'token missing or invalid'
-    })
-  }
-  */
 
   const user = await User.findById(decodedToken.id)
 
@@ -65,7 +56,25 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndRemove(request.params.id)
+  // eslint-disable-next-line no-undef
+  if (!request.token) {
+    return response.status(401).json({
+      error : 'token missing or invalid'
+    })
+  }
+
+  // eslint-disable-next-line no-undef
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  const blog = await Blog.findById(request.params.id)
+
+  if (blog.user.toString() === decodedToken.id) {
+    await Blog.findByIdAndRemove(request.params.id)
+  } else {
+    return response.status(401).json({
+      error : 'request done by wrong user'
+    })
+  }
+
   response.status(204).end()
 })
 
