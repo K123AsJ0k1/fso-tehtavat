@@ -13,11 +13,19 @@ const CreateBlog = (props) => {
             props.setUrl('')
             props.setTitle('')
             props.setAuthor('')
-        } catch (exception) {
-            props.setErrorMessage('failure in the creation process')
+            props.setMessage(`a new blog ${props.title} by ${props.title} added`)
+            props.setMessageType(1)
             setTimeout(() => {
-            props.setErrorMessage(null)
-          }, 5000)
+                props.setMessage(null)
+                props.setMessageType(0)
+            }, 5000)
+        } catch (exception) {
+            props.setMessage('a failure happend in the creation process')
+            props.setMessageType(2)
+            setTimeout(() => {
+                props.setMessage(null)
+                props.setMessageType(0)
+            }, 5000)
         }
     }
 

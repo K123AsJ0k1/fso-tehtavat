@@ -16,9 +16,11 @@ const Login = (props) => {
           props.setUsername('')
           props.setPassword('')
         } catch (exception) {
-          props.setErrorMessage('wrong credentials')
+          props.setMessage('wrong username or password')
+          props.setMessageType(2)
           setTimeout(() => {
-            props.setErrorMessage(null)
+            props.setMessage(null)
+            props.setMessageType(0)
           }, 5000)
         }
     }
