@@ -1,4 +1,5 @@
 import loginService from '../services/login'
+import blogService from '../services/blogs'
 
 const Login = (props) => {
     const handleLogin = async (event) => {
@@ -10,6 +11,7 @@ const Login = (props) => {
               password: props.password 
           })
           window.localStorage.setItem('loggedBloglistUser', JSON.stringify(user))
+          blogService.setToken(user.token)
           props.setUser(user)
           props.setUsername('')
           props.setPassword('')
