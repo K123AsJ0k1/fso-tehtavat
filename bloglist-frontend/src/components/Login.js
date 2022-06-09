@@ -9,6 +9,7 @@ const Login = (props) => {
               username: props.username, 
               password: props.password 
           })
+          window.localStorage.setItem('loggedBloglistUser', JSON.stringify(user))
           props.setUser(user)
           props.setUsername('')
           props.setPassword('')
