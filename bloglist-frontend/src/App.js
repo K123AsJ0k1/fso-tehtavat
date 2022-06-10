@@ -3,7 +3,7 @@ import Blog from './components/Blog'
 import Login from './components/Login'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
-import CreateBlog from './components/CreateBlog'
+import BlogForm from './components/BlogForm'
 import blogService from './services/blogs'
 
 const App = () => {
@@ -11,9 +11,6 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [blogs, setBlogs] = useState([])
-  const [url, setUrl] = useState('')
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('')
   const [visible, setVisible] = useState(false)
@@ -66,13 +63,7 @@ const App = () => {
       </div>
       <br/>
       <Togglable visible={visible} setVisible={setVisible} buttonLabel="new blog">
-        <CreateBlog
-          url = {url}
-          title = {title}
-          author = {author}
-          setUrl = {setUrl}
-          setTitle = {setTitle}
-          setAuthor = {setAuthor}  
+        <BlogForm  
           setMessage = {setMessage}
           setMessageType = {setMessageType}
         />

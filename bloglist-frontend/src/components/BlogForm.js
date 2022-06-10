@@ -1,19 +1,24 @@
+import { useState } from 'react'
 import blogServices from '../services/blogs'
 
-const CreateBlog = (props) => {
-    const handleCreation = async (event) => {
+const BlogForm = (props) => {
+    const [url, setUrl] = useState('')
+    const [title, setTitle] = useState('')
+    const [author, setAuthor] = useState('')
+
+    const addBlog = async (event) => {
         event.preventDefault()
 
         try {
             await blogServices.create({ 
-                url: props.url,
-                title: props.title, 
-                author: props.author
+                url: url,
+                title: title, 
+                author: author
             })
-            props.setUrl('')
-            props.setTitle('')
-            props.setAuthor('')
-            props.setMessage(`a new blog ${props.title} by ${props.title} added`)
+            setUrl('')
+            setTitle('')
+            setAuthor('')
+            props.setMessage(`a new blog ${title} by ${author} added`)
             props.setMessageType(1)
             setTimeout(() => {
                 props.setMessage(null)
@@ -33,32 +38,32 @@ const CreateBlog = (props) => {
         <div>
             <h2>create new</h2>
             <br/>
-            <form onSubmit={handleCreation}>
+            <form onSubmit={addBlog}>
                 <div>
                     title:
                         <input
                         type="text"
-                        value={props.title}
+                        value={title}
                         name="title"
-                        onChange={({ target }) => props.setTitle(target.value)}
+                        onChange={({ target }) => setTitle(target.value)}
                     />
                 </div>
                 <div>
                     author:
                         <input
                         type="text"
-                        value={props.author}
+                        value={author}
                         name="author"
-                        onChange={({ target }) => props.setAuthor(target.value)}
+                        onChange={({ target }) => setAuthor(target.value)}
                     />
                 </div>
                 <div>
                     url:
                         <input
                         type="text"
-                        value={props.url}
+                        value={url}
                         name="url"
-                        onChange={({ target }) => props.setUrl(target.value)}
+                        onChange={({ target }) => setUrl(target.value)}
                     />
                 </div>
                 <button type="submit">create</button>
@@ -67,4 +72,4 @@ const CreateBlog = (props) => {
     )
 }
 
-export default CreateBlog
+export default BlogForm
