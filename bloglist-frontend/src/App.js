@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import Login from './components/Login'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 import CreateBlog from './components/CreateBlog'
 import blogService from './services/blogs'
 
@@ -15,12 +16,14 @@ const App = () => {
   const [author, setAuthor] = useState('')
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('')
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    setVisible(false)
     blogService.getAll().then(blogs =>
       setBlogs(blogs)
     )  
-  }, [url,setUrl])
+  }, [message, setMessage])
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
@@ -62,16 +65,18 @@ const App = () => {
         <button onClick={handleLogout}>logout</button>
       </div>
       <br/>
-      <CreateBlog
-        url = {url}
-        title = {title}
-        author = {author}
-        setUrl = {setUrl}
-        setTitle = {setTitle}
-        setAuthor = {setAuthor}  
-        setMessage = {setMessage}
-        setMessageType = {setMessageType}
-      />
+      <Togglable visible={visible} setVisible={setVisible} buttonLabel="new blog">
+        <CreateBlog
+          url = {url}
+          title = {title}
+          author = {author}
+          setUrl = {setUrl}
+          setTitle = {setTitle}
+          setAuthor = {setAuthor}  
+          setMessage = {setMessage}
+          setMessageType = {setMessageType}
+        />
+      </Togglable>
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
       )}

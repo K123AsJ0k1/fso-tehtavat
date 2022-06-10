@@ -210,3 +210,199 @@ Muista, että tässä tyhjä taulukko varmistaa sen, että efekti suoritetaan ai
 tai 
 
     window.localStorage.clear()
+
+# props.children ja proptypet
+
+Muutetaan tarkasteltua sovellusta siten, että kirjautumislomake ilmestyy painamalla log in ja poistuu painamalla cancel. Tämä voidaan tehdä seuraavasti:
+    
+    const [loginVisible, setLoginVisible] = useState(false)
+
+    const LoginForm = ({
+        handleSubmit,
+        handleUsernameChange,
+        handlePasswordChange,
+        username,
+        password
+    }) => {
+        const hideWhenVisible = { display: loginVisible ? 'none' : '' }
+        const showWhenVisible = { display: loginVisible ? '' : 'none' }
+        return (
+            <div>
+                <div style={hideWhenVisible}>
+                    <button onClick={() => setLoginVisible(true)}>log in</button>
+                </div>
+                <div style={showWhenVisible}>
+                <LoginForm
+                    username={username}
+                    password={password}
+                    handleUsernameChange={({ target }) => setUsername(target.value)}
+                    handlePasswordChange={({ target }) => setPassword(target.value)}
+                    handleSubmit={handleLogin}
+                />
+                <button onClick={() => setLoginVisible(false)}>cancel</button>
+                </div>
+            </div>
+        )
+    }
+
+    export default LoginForm
+
+Tässä propsit otetaan vastaan destruktoimalla, eli kentät otetaan vastaan omiin muuttujiinsa. Itse piilottaminen perustuu CSS:n määrittelyn hyödyntämiseen. Eristetään tästä kirjautumislomakeen näkyvyyttä ympäröivä koodi omaan komponenttiinsa Togglable, jonka koodi on seuraava:
+
+    import { useState } from 'react'
+
+    const Togglable = (props) => {
+        const [visible, setVisible] = useState(false)
+
+        const hideWhenVisible = { display: visible ? 'none' : '' }
+        const showWhenVisible = { display: visible ? '' : 'none' }
+
+        const toggleVisibility = () => {
+            setVisible(!visible)
+        }
+
+        return (
+            <div>
+            <div style={hideWhenVisible}>
+                <button onClick={toggleVisibility}>{props.buttonLabel}</button>
+            </div>
+            <div style={showWhenVisible}>
+                {props.children}        <button onClick={toggleVisibility}>cancel</button>
+            </div>
+            </div>
+        )
+    }
+
+    export default Togglable
+
+Tämä mahdollistaa sen, että Togglablen sisälle laitetut lapset voidaan piilottaa, jonka seurauksesti voidaan luoda:
+
+    <Togglable buttonLabel='login'>
+        <LoginForm
+            username={username}
+            password={password}
+            handleUsernameChange={({ target }) => setUsername(target.value)}
+            handlePasswordChange={({ target }) => setPassword(target.value)}
+            handleSubmit={handleLogin}
+        />
+    </Togglable>
+
+Huomaa Togglable komponentissa käytetty props.children, jonka avulla sen sisälle laitettavat komponentit on määritelty. Tämä on reactin automaattisesti määrittelemä aina olemassa oleva propsi, minkä takia automaattisesti suljetuilla tapauksilla props.children on tyhjä taulukko.
+
+Jos nyt tarkastellaan sovelluksen tilaa, huomataan sen kokonaan olevan sijoitettu App:in, vaikka se ei tarvitse niitä mihinkään. Nämä tilat voidaan siirtää niitä vastaaviin komponenteihin, minkä seurauksesta muistiinpanon luomisesta huolehtiva komponentti muuttuu seuraavasti: 
+
+    import { useState } from 'react' 
+
+    const NoteForm = ({ createNote }) => {
+        const [newNote, setNewNote] = useState('') 
+
+        const handleChange = (event) => {
+            setNewNote(event.target.value)
+        }
+
+        const addNote = (event) => {
+            event.preventDefault()
+            createNote({
+            content: newNote,
+            important: Math.random() > 0.5,
+            })
+
+            setNewNote('')
+        }
+
+        return (
+            <div>
+            <h2>Create a new note</h2>
+
+            <form onSubmit={addNote}>
+                <input
+                value={newNote}
+                onChange={handleChange}
+                />
+                <button type="submit">save</button>
+            </form>
+            </div>
+        )
+    }
+
+    export default NoteForm
+
+Nyt App voidaan muuttaa seuraavasti:
+
+    <Togglable buttonLabel="new note">
+        <NoteForm createNote={addNote} />      
+    </Togglable>
+
+Sovellusta voidaan edelleen parantaa hyödyntämällä reactin ref-mekanismia, joka mahdollistaa viittauksen komponenttiin. Muutetaan App tiedostoa seuraavasti:
+
+import { useState, useEffect, useRef } from 'react'
+
+    const App = () => {
+        const noteFormRef = useRef()
+        const noteForm = () => (
+            <Togglable buttonLabel='new note' ref={noteFormRef}>      
+                <NoteForm createNote={addNote} />
+            </Togglable>
+        )
+    }
+
+Nyt togglabe laajentuu seuraavasti:
+
+    import { useState, useImperativeHandle, forwardRef } from 'react'
+    
+    const Togglable = forwardRef((props, ref) => {  
+        const [visible, setVisible] = useState(false)
+
+        const hideWhenVisible = { display: visible ? 'none' : '' }
+        const showWhenVisible = { display: visible ? '' : 'none' }
+
+        const toggleVisibility = () => {
+            setVisible(!visible)
+        }
+
+        useImperativeHandle(ref, () => {    return {      toggleVisibility    }  })
+            return (
+                <div>
+                <div style={hideWhenVisible}>
+                    <button onClick={toggleVisibility}>{props.buttonLabel}</button>
+                </div>
+                <div style={showWhenVisible}>
+                    {props.children}
+                    <button onClick={toggleVisibility}>cancel</button>
+                </div>
+                </div>
+        )
+    })
+
+    export default Togglable
+
+Lisätään vielä App tiedostoon:
+
+    const addNote = (noteObject) => {
+        noteFormRef.current.toggleVisibility()    noteService
+        .create(noteObject)
+        .then(returnedNote => {     
+            setNotes(notes.concat(returnedNote))
+        })
+    }
+
+Huomaa vielä react komponetteihin liittyen, että tapauksessa 
+
+    <div>
+        <Togglable buttonLabel="1" ref={togglable1}>
+            ensimmäinen
+        </Togglable>
+
+        <Togglable buttonLabel="2" ref={togglable2}>
+            toinen
+        </Togglable>
+
+        <Togglable buttonLabel="3" ref={togglable3}>
+            kolmas
+        </Togglable>
+    </div>
+
+Syntyy kolme erillistä komponenttiolioa, joilla kaikilla oma tilansa.
+
+
+
