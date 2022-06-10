@@ -15,7 +15,7 @@ blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
   if (body.title === undefined || body.url === undefined) {
     response.status(400).end()
   }
-  if (!isNaN(body.likes)) {
+  if (!isNaN(body.likes) || body.likes === undefined) {
     body.likes = 0
   }
 
