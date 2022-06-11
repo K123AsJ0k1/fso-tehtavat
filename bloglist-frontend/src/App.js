@@ -19,7 +19,7 @@ const App = () => {
     setVisible(false)
     blogService.getAll().then(blogs =>
       setBlogs(blogs)
-    )  
+    )
   }, [message, setMessage])
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const App = () => {
       blogService.setToken(user.token)
     }
   },[])
-  
+
   const handleLogout = () => {
     window.localStorage.clear()
     setUser(null)
@@ -62,7 +62,7 @@ const App = () => {
       </div>
     )
   }
-  
+
   return (
     <div>
       <h2>blogs</h2>
@@ -73,7 +73,7 @@ const App = () => {
       </div>
       <br/>
       <Togglable visible={visible} setVisible={setVisible} buttonLabel="create new blog">
-        <BlogForm  
+        <BlogForm
           setMessage = {setMessage}
           setMessageType = {setMessageType}
         />

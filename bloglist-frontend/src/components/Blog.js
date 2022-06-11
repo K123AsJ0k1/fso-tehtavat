@@ -3,12 +3,12 @@ import blogService from '../services/blogs'
 import PropTypes from 'prop-types'
 
 const Blog = ({
-  blog, 
-  user, 
-  setMessage, 
+  blog,
+  user,
+  setMessage,
   setMessageType
-  }) => {
-  
+}) => {
+
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -16,7 +16,7 @@ const Blog = ({
     borderWidth: 1,
     marginBottom: 5
   }
-  
+
   const [viewable, setViewable] = useState(false)
 
   const toggleViewable = () => {
@@ -25,20 +25,20 @@ const Blog = ({
 
   const updateBlog = async (event) => {
     event.preventDefault()
-  
+
     try {
-        await blogService.update(blog.id,{ 
-          title: blog.title, 
-          author: blog.author, 
-          url: blog.url, 
-          likes: blog.likes + 1
-        })
-        setMessage(`A blog with a ${blog.title} from an author ${blog.author} has been liked`)
-        setMessageType(1)
-        setTimeout(() => {
-          setMessage('')
-          setMessageType(0)
-        }, 5000)
+      await blogService.update(blog.id,{
+        title: blog.title,
+        author: blog.author,
+        url: blog.url,
+        likes: blog.likes + 1
+      })
+      setMessage(`A blog with a title ${blog.title} from an author ${blog.author} has been liked`)
+      setMessageType(1)
+      setTimeout(() => {
+        setMessage('')
+        setMessageType(0)
+      }, 5000)
     } catch (exception) {
       setMessage('a failure happend in the creation process')
       setMessageType(2)
@@ -54,13 +54,13 @@ const Blog = ({
       event.preventDefault()
 
       try {
-          await blogService.remove(blog.id)
-          setMessage(`A blog with a ${blog.title} from an author ${blog.author} was deleted`)
-          setMessageType(1)
-          setTimeout(() => {
-            setMessage('')
-            setMessageType(0)
-          }, 5000)
+        await blogService.remove(blog.id)
+        setMessage(`A blog with a ${blog.title} from an author ${blog.author} was deleted`)
+        setMessageType(1)
+        setTimeout(() => {
+          setMessage('')
+          setMessageType(0)
+        }, 5000)
       } catch (exception) {
         setMessage('a failure happend in the creation process')
         setMessageType(2)
@@ -76,15 +76,15 @@ const Blog = ({
     return (
       <div style={blogStyle}>
         <div>
-        {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
-        <br/>
-        {blog.url}
-        <br/>
+          {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
+          <br/>
+          {blog.url}
+          <br/>
         likes {blog.likes} <button onClick={updateBlog}>like</button>
-        <br/>
-        {blog.user.name}
-        <button onClick={removeBlog}>remove</button>
-        </div>  
+          <br/>
+          {blog.user.name}
+          <button onClick={removeBlog}>remove</button>
+        </div>
       </div>
     )
   }
@@ -93,29 +93,29 @@ const Blog = ({
     return (
       <div style={blogStyle}>
         <div>
-        {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
-        <br/>
-        {blog.url}
-        <br/>
+          {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
+          <br/>
+          {blog.url}
+          <br/>
         likes {blog.likes} <button onClick={updateBlog}>like</button>
-        <br/>
-        {blog.user.name}
-        </div>  
+          <br/>
+          {blog.user.name}
+        </div>
       </div>
     )
   }
-  
+
   return (
     <div style={blogStyle}>
       <div>
-      {blog.title} {blog.author} <button onClick={toggleViewable}>view</button>
-      </div>  
+        {blog.title} {blog.author} <button onClick={toggleViewable}>view</button>
+      </div>
     </div>
   )
 }
 
 Blog.propTypes = {
-  blog: PropTypes.object.isRequired,  
+  blog: PropTypes.object.isRequired,
   user: PropTypes.object.isRequired
 }
 
