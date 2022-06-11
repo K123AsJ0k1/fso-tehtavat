@@ -1,7 +1,13 @@
 import { useState } from 'react'
 import blogService from '../services/blogs'
+import PropTypes from 'prop-types'
 
-const Blog = ({blog, user, setMessage, setMessageType}) => {
+const Blog = ({
+  blog, 
+  user, 
+  setMessage, 
+  setMessageType
+  }) => {
   
   const blogStyle = {
     paddingTop: 10,
@@ -30,14 +36,14 @@ const Blog = ({blog, user, setMessage, setMessageType}) => {
         setMessage(`A blog with a ${blog.title} from an author ${blog.author} has been liked`)
         setMessageType(1)
         setTimeout(() => {
-          setMessage(null)
+          setMessage('')
           setMessageType(0)
         }, 5000)
     } catch (exception) {
       setMessage('a failure happend in the creation process')
       setMessageType(2)
       setTimeout(() => {
-        setMessage(null)
+        setMessage('')
         setMessageType(0)
       }, 5000)
     }
@@ -52,14 +58,14 @@ const Blog = ({blog, user, setMessage, setMessageType}) => {
           setMessage(`A blog with a ${blog.title} from an author ${blog.author} was deleted`)
           setMessageType(1)
           setTimeout(() => {
-            setMessage(null)
+            setMessage('')
             setMessageType(0)
           }, 5000)
       } catch (exception) {
         setMessage('a failure happend in the creation process')
         setMessageType(2)
         setTimeout(() => {
-          setMessage(null)
+          setMessage('')
           setMessageType(0)
         }, 5000)
       }
@@ -106,6 +112,11 @@ const Blog = ({blog, user, setMessage, setMessageType}) => {
       </div>  
     </div>
   )
+}
+
+Blog.propTypes = {
+  blog: PropTypes.object.isRequired,  
+  user: PropTypes.object.isRequired
 }
 
 export default Blog

@@ -1,26 +1,35 @@
 import loginService from '../services/login'
 import blogService from '../services/blogs'
+import PropTypes from 'prop-types'
 
-const Login = (props) => {
+const Login = ({ 
+    username, 
+    setUsername, 
+    password, 
+    setPassword, 
+    setUser, 
+    setMessage, 
+    setMessageType 
+    }) => {
     const handleLogin = async (event) => {
         event.preventDefault()
         
         try {
           const user = await loginService.login({ 
-              username: props.username, 
-              password: props.password 
+              username: username, 
+              password: password 
           })
           window.localStorage.setItem('loggedBloglistUser', JSON.stringify(user))
           blogService.setToken(user.token)
-          props.setUser(user)
-          props.setUsername('')
-          props.setPassword('')
+          setUser(user)
+          setUsername('')
+          setPassword('')
         } catch (exception) {
-          props.setMessage('wrong username or password')
-          props.setMessageType(2)
+          setMessage('wrong username or password')
+          setMessageType(2)
           setTimeout(() => {
-            props.setMessage(null)
-            props.setMessageType(0)
+            setMessage('')
+            setMessageType(0)
           }, 5000)
         }
     }
@@ -33,18 +42,18 @@ const Login = (props) => {
                     username
                         <input
                         type="text"
-                        value={props.username}
+                        value={username}
                         name="username"
-                        onChange={({ target }) => props.setUsername(target.value)}
+                        onChange={({ target }) => setUsername(target.value)}
                     />
                 </div>
                 <div>
                     password
                         <input
                         type="text"
-                        value={props.password}
+                        value={password}
                         name="password"
-                        onChange={({ target }) => props.setPassword(target.value)}
+                        onChange={({ target }) => setPassword(target.value)}
                     />
                 </div>
                 <button type="submit">login</button>
@@ -52,5 +61,11 @@ const Login = (props) => {
         </div>
     )
 }
+
+Login.propTypes = {
+    username: PropTypes.string.isRequired,
+    password: PropTypes.string.isRequired
+}
+
 
 export default Login

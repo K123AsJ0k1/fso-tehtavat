@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import blogServices from '../services/blogs'
 
-const BlogForm = (props) => {
+const BlogForm = ({ 
+    setMessage, 
+    setMessageType 
+    }) => {
     const [url, setUrl] = useState('')
     const [title, setTitle] = useState('')
     const [author, setAuthor] = useState('')
@@ -18,18 +21,18 @@ const BlogForm = (props) => {
             setUrl('')
             setTitle('')
             setAuthor('')
-            props.setMessage(`a new blog ${title} by ${author} added`)
-            props.setMessageType(1)
+            setMessage(`a new blog ${title} by ${author} added`)
+            setMessageType(1)
             setTimeout(() => {
-                props.setMessage(null)
-                props.setMessageType(0)
+                setMessage('')
+                setMessageType(0)
             }, 5000)
         } catch (exception) {
-            props.setMessage('a failure happend in the creation process')
-            props.setMessageType(2)
+            setMessage('a failure happend in the creation process')
+            setMessageType(2)
             setTimeout(() => {
-                props.setMessage(null)
-                props.setMessageType(0)
+                setMessage('')
+                setMessageType(0)
             }, 5000)
         }
     }

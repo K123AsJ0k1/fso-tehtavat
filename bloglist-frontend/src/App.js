@@ -12,7 +12,7 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [blogs, setBlogs] = useState([])
   const [message, setMessage] = useState('')
-  const [messageType, setMessageType] = useState('')
+  const [messageType, setMessageType] = useState(0)
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {

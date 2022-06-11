@@ -402,7 +402,89 @@ Huomaa vielä react komponetteihin liittyen, että tapauksessa
         </Togglable>
     </div>
 
-Syntyy kolme erillistä komponenttiolioa, joilla kaikilla oma tilansa.
+Syntyy kolme erillistä komponenttiolioa, joilla kaikilla oma tilansa. Huomaa myös se, että vaikka togglable olettaa propsin buttonlable olemassaolon, niin sovellus edelleen toimii ilman sitä. Tämä voidaan korjata hyödyntämällä komentoa npm install prop-types, jonka jälkeen buttonLable voidaan määritellä pakolliseki string-tyypin propsiksi seuraavasti:
+
+    import PropTypes from 'prop-types'
+
+    const Togglable = React.forwardRef((props, ref) => {
+    // ..
+    }
+
+    Togglable.propTypes = {
+        buttonLabel: PropTypes.string.isRequired
+    }
+
+Koodi edelleen toimii, mutta tämä varmistaa errorin näyttämisen asiaan liittyen. Puuttumisen lisäksi propsin tyyppi on tarkastelun alla, sillä sen ollessa väärä konsoliin tulee virheilmoitus.
+
+Laitetaan vielä ESLint frontend:in. Create-react-app on asentanut ESLintin valmiiksi projektiin, joten on luotava sopiva konfiguraatio .eslintrc.js ja ajetaan komento npm install --save-dev eslint-plugin-jest turhien huomautusten poistamiseksi. Luodaan .eslintrc.js muodoltaan
+
+    module.exports = {
+        "env": {
+            "browser": true,
+            "es6": true,
+            "jest/globals": true 
+        },
+        "extends": [ 
+            "eslint:recommended",
+            "plugin:react/recommended"
+        ],
+        "parserOptions": {
+            "ecmaFeatures": {
+                "jsx": true
+            },
+            "ecmaVersion": 2018,
+            "sourceType": "module"
+        },
+        "plugins": [
+            "react", "jest"
+        ],
+        "rules": {
+            "indent": [
+                "error",
+                2  
+            ],
+            "linebreak-style": [
+                "error",
+                "unix"
+            ],
+            "quotes": [
+                "error",
+                "single"
+            ],
+            "semi": [
+                "error",
+                "never"
+            ],
+            "eqeqeq": "error",
+            "no-trailing-spaces": "error",
+            "object-curly-spacing": [
+                "error", "always"
+            ],
+            "arrow-spacing": [
+                "error", { "before": true, "after": true }
+            ],
+            "no-console": 0,
+            "react/prop-types": 0,
+            "react/react-in-jsx-scope": "off"
+        },
+        "settings": {
+            "react": {
+            "version": "detect"
+            }
+        }
+    }
+
+, luodaan tiedost .eslintignore sisällöllä
+
+    node_modules
+    build
+    .eslintrc.js
+
+ja luodaan npm skripti lintausta varten:
+
+    "eslint": "eslint ."
+
+Huomaa, että create-react-appilla on oletusarvoinen ESLint-konfiguraatio, joka korvattiin nyt kokonaan omalla konfiguraatiolla.
 
 
 

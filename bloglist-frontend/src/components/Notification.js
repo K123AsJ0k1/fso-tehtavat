@@ -1,21 +1,27 @@
 import '../index.css'
+import PropTypes from 'prop-types'
 
-const Notification = (props) => {
-    if (props.messageType == 1) {
+const Notification = ({ message, messageType }) => {
+    if (messageType == 1) {
       return (
         <div className="success">
-          {props.message}
+          {message}
         </div>
       )
     }
-    if (props.messageType == 2) {
+    if (messageType == 2) {
       return (
         <div className="failure">
-          {props.message}
+          {message}
         </div>
       )
     }
     return null
+}
+
+Notification.propTypes = {
+  message: PropTypes.string.isRequired,
+  messageType: PropTypes.number.isRequired
 }
 
 export default Notification
