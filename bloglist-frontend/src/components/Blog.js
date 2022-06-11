@@ -1,5 +1,7 @@
 import { useState } from 'react'
-const Blog = ({blog}) => {
+import blogService from '../services/blogs'
+
+const Blog = ({blog, setMessage, setMessageType}) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -14,6 +16,33 @@ const Blog = ({blog}) => {
     setViewable(!viewable)
   }
 
+  const updateBlog = async (event) => {
+    event.preventDefault()
+  
+    try {
+        await blogService.update(blog.id,{ 
+          title: blog.title, 
+          author: blog.author, 
+          url: blog.url, 
+          likes: blog.likes + 1
+        })
+        setMessage(`A blog with a ${blog.title} from an author ${blog.author} has been liked`)
+        setMessageType(1)
+        setTimeout(() => {
+          setMessage(null)
+          setMessageType(0)
+        }, 5000)
+    } catch (exception) {
+      setMessage('a failure happend in the creation process')
+      setMessageType(2)
+      setTimeout(() => {
+        setMessage(null)
+        setMessageType(0)
+      }, 5000)
+    }
+    
+  }
+
   if (viewable) {
     return (
       <div style={blogStyle}>
@@ -22,7 +51,7 @@ const Blog = ({blog}) => {
         <br/>
         {blog.url}
         <br/>
-        likes {blog.likes} <button>like</button>
+        likes {blog.likes} <button onClick={updateBlog}>like</button>
         <br/>
         {blog.user.name}
         </div>  
