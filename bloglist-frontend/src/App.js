@@ -72,14 +72,14 @@ const App = () => {
         <button onClick={handleLogout}>logout</button>
       </div>
       <br/>
-      <Togglable visible={visible} setVisible={setVisible} buttonLabel="new blog">
+      <Togglable visible={visible} setVisible={setVisible} buttonLabel="create new blog">
         <BlogForm  
           setMessage = {setMessage}
           setMessageType = {setMessageType}
         />
       </Togglable>
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} setMessage={setMessage} setMessageType={setMessageType}/>
+        <Blog key={blog.id} blog={blog} user={user} setMessage={setMessage} setMessageType={setMessageType}/>
       ).sort(compareBlog)}
     </div>
   )
