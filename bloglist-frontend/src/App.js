@@ -36,6 +36,16 @@ const App = () => {
     setUser(null)
   }
 
+  const compareBlog = (a,b) => {
+    if (a.props.blog.likes > b.props.blog.likes) {
+      return -1
+    }
+    if (a.props.blog.likes < b.props.blog.likes) {
+      return 1
+    }
+    return 0
+  }
+
   if (user === null) {
     return(
       <div>
@@ -70,7 +80,7 @@ const App = () => {
       </Togglable>
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} setMessage={setMessage} setMessageType={setMessageType}/>
-      )}
+      ).sort(compareBlog)}
     </div>
   )
 }
