@@ -486,5 +486,128 @@ ja luodaan npm skripti lintausta varten:
 
 Huomaa, että create-react-appilla on oletusarvoinen ESLint-konfiguraatio, joka korvattiin nyt kokonaan omalla konfiguraatiolla.
 
+# React-sovellusten testaaminen
+
+Tarkastellaan nyt, miten frontendia voidaan testata. Testit tehdään Jest-kirjastolla, joka on valmiiksi konfiguroitu Create React App:illa luotuihin projekteihin. Sen lisäksi tarvitaan apukirjasto React Testing Library, joten asennettaan kummatkin komennolla npm install --save-dev @testing-library/react @testing-library/jest-dom. Muokataan nyt sovelluksen komponenttia Note seuraavasti:
+
+    const Note = ({ note, toggleImportance }) => {
+        const label = note.important
+            ? 'make not important'
+            : 'make important'
+
+        return (
+            <li className='note'>      {note.content}
+            <button onClick={toggleImportance}>{label}</button>
+            </li>
+        )
+    }
+
+Tehdään nyt testi tiedostoon src/components/Note.test.js, joka on muodoltaan:
+
+    import React from 'react'
+    import '@testing-library/jest-dom/extend-expect'
+    import { render, screen } from '@testing-library/react'
+    import Note from './Note'
+
+    test('renders content', () => {
+        const note = {
+            content: 'Component testing is done with react-testing-library',
+            important: true
+        }
+
+        render(<Note note={note} />)
+
+        const element = screen.getByText('Component testing is done with react-testing-library')
+        expect(element).toBeDefined()
+    })
+
+Huomaa, että tässä testissä komponentti renderöidään funktiolla render. Ne normaalisti renderöityvät DOM:in, mutta nyt käytetään screen oliota, josta haetaan sisältö metodin getByText avulla. Create React APP on konfiguroinut testit oletusarvoisestsi suorittamaan watch moodissa, eli npm test komennnon suorittamisen jälkeen konsoli jää odottamaan koodissa tapahtuvia muutoksia, joiden jälkeen testit suoritetaan automaattisesti ja jest alkaa taas odottamaan uusia muutoksia. Normaalisti voidaan ajaa komenolla CI=true npm test.
+
+Reactissa on kaksi konventiota testien sijoittamisesti, eli samaan hakemistoon testattavan komponentin kanssa ja erillisessä hakemistostssa olevat testit. Huomaa, että tämä on mielipide asia, joten valinta on aina jonkun mielestä väärin. Tosin Create React App:in konfiguroidessa testit samaan hakemistoon, käytetään ensimmäistä tapaa.
+
+React Testing library antaa monia tapoja komponentin sisällän tutkimiseen, minkä takia viimeisellä rivillä oleva expect on turha. Esim, jos haluamme etsiä testattavia komponentteja CSS-selektoreilla, niin se onnistuu seuraavasti container-olion metodilla querySelector:
+
+    const { container } = render(<Note note={note} />)
+    
+    const div = container.querySelector('.note')  
+    
+    expect(div).toHaveTextContent(    
+        'Component testing is done with react-testing-library'  
+    )
+
+Testeissä voi debugata screen olion metodilla debug, jolloin konsoliin tulostuu komponentin generoima HTML. Komponentista voidaan ottaa pienempikin osa, kuten screen.debug(element).
+
+Testataksemme nappien toimintaa on asenetteva apukirjasto user-event komennolla npm install --save-dev @testing-library/user-event. Jos huomaan yhteensopivuus eroja, niin käytä komentoa npm install -D --exact jest-watch-typeahead@0.6.5. Testaus toimii seuraavasti:
+
+    import React from 'react'
+    import '@testing-library/jest-dom/extend-expect'
+    import { render, screen } from '@testing-library/react'
+    import userEvent from '@testing-library/user-event'import Note from './Note'
+
+    // ...
+
+    test('clicking the button calls event handler once', async () => {
+        const note = {
+            content: 'Component testing is done with react-testing-library',
+            important: true
+        }
+
+        const mockHandler = jest.fn()
+
+        render(
+            <Note note={note} toggleImportance={mockHandler} />
+        )
+
+        const user = userEvent.setup()
+        const button = screen.getByText('make not important')
+        await user.click(button)
+
+        expect(mockHandler.mock.calls).toHaveLength(1)
+    })
+
+Huomaa, että käytetään Jestin mock funktiota ja komponenttin kanssa vuorovaikuttaminen vaatii uuden session aloitusta, joka onnistuu userEvent olion setup metodilla. Testissä se etsii tekstin perusteella napin ja klikkaa sitä, joka onnistuu userEvent-olion metodin click avulla. Testi onnistuu, jos mock funktiota on kutsuttu täsmälleen kerran. Mock-oliot ja funktiot ovat valekomponentteja, joiden avulla korvataan komponenttien riippuvuuksia. Ne mahdollistavat syötteiden palautuksen, metodikutsujen lukumäärän ja parametrien tarkkailun.
+
+Lomakkeita voidaan testata seuraavasti:
+
+    import React from 'react'
+    import { render, screen } from '@testing-library/react'
+    import '@testing-library/jest-dom/extend-expect'
+    import NoteForm from './NoteForm'
+    import userEvent from '@testing-library/user-event'
+
+    test('<NoteForm /> updates parent state and calls onSubmit', async () => {
+        const user = userEvent.setup()
+        const createNote = jest.fn()
+
+        render(<NoteForm createNote={createNote} />)
+
+        const input = screen.getByRole('textbox')
+        const sendButton = screen.getByText('save')
+
+        await user.type(input, 'testing a form...')
+        await user.click(sendButton)
+
+        expect(createNote.mock.calls).toHaveLength(1)
+        expect(createNote.mock.calls[0][0].content).toBe('testing a form...')
+    })
+
+Huomaa, että jos lomakkeella on useita syöttökenttiä, niin const input = screen.getByRole('textbox') aiheuttaa virheen. Tämä voidaan korjata seuraavasti:
+
+    const inputs = screen.getAllByRole('textbox')
+
+    await user.type(inputs[0], 'testing a form...')
+
+Syöttökentille myös yleensä lisätään placeholder, joka ohjaa käyttäjää kirjoittamaan syötekentään oikean arvon. Tätä voi hyödyntää apuna metodilla geByPlaceHolderText. Joustavimman tavan tosin antaa render metodin content kentän querySelector, joka mahollistaa komponenttien etsimisen mielivaltaisten CSS-selektorien avulla. 
+
+Huomaa se, että jos HTML komponentti renderöisi tekstin tavalla
+
+    Your awesome note: {note.content}
+
+, niin testissä käytetty getByText ei löytäisi sitä. Se etsii ainoastaan parametrien tekstiä, eikä mitään muuta. Tämän takia on joko lisättävä { exact: false } tai käyttää metodia findByText. Viimeinen tapaus tosin palauttaa promisen. Myös metoid queryByText on käyttökelpoinen, vaikka se ei aiheuta poikkeusta, jos elementtiä ei löydy. Sitä voidaan nimittäin käyttää varmistamaan, että jokin asia ei renderöidy.
+
+Testauskattavuus saadaan helposti selville komennolla CI=true npm test -- --coverage, joka tuo tulokset konsoliin ja primitiivisen HTML repostin hakemistoon coverage/lcov-report.
+
+
+
 
 

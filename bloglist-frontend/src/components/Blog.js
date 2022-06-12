@@ -107,7 +107,7 @@ const Blog = ({
 
   return (
     <div style={blogStyle}>
-      <div>
+      <div className='regularBlog'>
         {blog.title} {blog.author} <button onClick={toggleViewable}>view</button>
       </div>
     </div>
