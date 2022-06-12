@@ -74,7 +74,7 @@ const Blog = ({
 
   if (viewable && blog.user.username === user.username) {
     return (
-      <div style={blogStyle}>
+      <div className='viewableBlog' style={blogStyle}>
         <div>
           {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
           <br/>
@@ -91,7 +91,7 @@ const Blog = ({
 
   if (viewable) {
     return (
-      <div style={blogStyle}>
+      <div className='viewableBlog' style={blogStyle}>
         <div>
           {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
           <br/>
