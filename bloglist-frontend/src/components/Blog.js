@@ -1,12 +1,15 @@
-import { useState } from 'react'
-import blogService from '../services/blogs'
+//import { useEffect } from 'react'
+//import blogService from '../services/blogs'
 import PropTypes from 'prop-types'
+//import { useEffect } from 'react'
 
 const Blog = ({
   blog,
   user,
-  setMessage,
-  setMessageType
+  viewable,
+  toggleViewable,
+  updateBlog,
+  removeBlog
 }) => {
 
   const blogStyle = {
@@ -17,77 +20,23 @@ const Blog = ({
     marginBottom: 5
   }
 
-  const [viewable, setViewable] = useState(false)
-
-  const toggleViewable = () => {
-    setViewable(!viewable)
-  }
-
-  const updateBlog = async (event) => {
-    event.preventDefault()
-
-    try {
-      await blogService.update(blog.id,{
-        title: blog.title,
-        author: blog.author,
-        url: blog.url,
-        likes: blog.likes + 1
-      })
-      setMessage(`A blog with a title ${blog.title} from an author ${blog.author} has been liked`)
-      setMessageType(1)
-      setTimeout(() => {
-        setMessage('')
-        setMessageType(0)
-      }, 5000)
-    } catch (exception) {
-      setMessage('a failure happend in the creation process')
-      setMessageType(2)
-      setTimeout(() => {
-        setMessage('')
-        setMessageType(0)
-      }, 5000)
-    }
-  }
-
-  const removeBlog = async (event) => {
-    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      event.preventDefault()
-
-      try {
-        await blogService.remove(blog.id)
-        setMessage(`A blog with a ${blog.title} from an author ${blog.author} was deleted`)
-        setMessageType(1)
-        setTimeout(() => {
-          setMessage('')
-          setMessageType(0)
-        }, 5000)
-      } catch (exception) {
-        setMessage('a failure happend in the creation process')
-        setMessageType(2)
-        setTimeout(() => {
-          setMessage('')
-          setMessageType(0)
-        }, 5000)
-      }
-    }
-  }
-
   if (viewable && blog.user.username === user.username) {
     return (
-      <div className='viewableBlog' style={blogStyle}>
+      <div className='viewableUserBlog' style={blogStyle}>
         <div>
           {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
           <br/>
           {blog.url}
           <br/>
-        likes {blog.likes} <button onClick={updateBlog}>like</button>
+          likes {blog.likes} <button onClick={event => updateBlog(event,blog)}>like</button>
           <br/>
           {blog.user.name}
-          <button onClick={removeBlog}>remove</button>
+          <button onClick={event => removeBlog(event,blog)}>remove</button>
         </div>
       </div>
     )
   }
+
 
   if (viewable) {
     return (
@@ -97,7 +46,7 @@ const Blog = ({
           <br/>
           {blog.url}
           <br/>
-        likes {blog.likes} <button onClick={updateBlog}>like</button>
+        likes {blog.likes} <button onClick={event => updateBlog(event,blog)}>like</button>
           <br/>
           {blog.user.name}
         </div>

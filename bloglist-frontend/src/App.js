@@ -14,6 +14,59 @@ const App = () => {
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState(0)
   const [visible, setVisible] = useState(false)
+  const [viewable, setViewable] = useState(false)
+
+  const toggleViewable = () => {
+    setViewable(!viewable)
+  }
+
+  const updateBlog = async (event,blog) => {
+    event.preventDefault()
+    try {
+      await blogService.update(blog.id,{
+        title: blog.title,
+        author: blog.author,
+        url: blog.url,
+        likes: blog.likes + 1
+      })
+      setMessage(`A blog with a title ${blog.title} from an author ${blog.author} has been liked`)
+      setMessageType(1)
+      setTimeout(() => {
+        setMessage('')
+        setMessageType(0)
+      }, 5000)
+    } catch (exception) {
+      setMessage('a failure happend in the creation process')
+      setMessageType(2)
+      setTimeout(() => {
+        setMessage('')
+        setMessageType(0)
+      }, 5000)
+    }
+  }
+
+  const removeBlog = async (event,blog) => {
+    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+      event.preventDefault()
+
+      try {
+        await blogService.remove(blog.id)
+        setMessage(`A blog with a ${blog.title} from an author ${blog.author} was deleted`)
+        setMessageType(1)
+        setTimeout(() => {
+          setMessage('')
+          setMessageType(0)
+        }, 5000)
+      } catch (exception) {
+        setMessage('a failure happend in the creation process')
+        setMessageType(2)
+        setTimeout(() => {
+          setMessage('')
+          setMessageType(0)
+        }, 5000)
+      }
+    }
+  }
 
   useEffect(() => {
     setVisible(false)
@@ -79,7 +132,17 @@ const App = () => {
         />
       </Togglable>
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} user={user} setMessage={setMessage} setMessageType={setMessageType}/>
+        <Blog
+          key={blog.id}
+          blog={blog}
+          user={user}
+          setMessage={setMessage}
+          setMessageType={setMessageType}
+          viewable={viewable}
+          toggleViewable={toggleViewable}
+          updateBlog={updateBlog}
+          removeBlog={removeBlog}
+        />
       ).sort(compareBlog)}
     </div>
   )
