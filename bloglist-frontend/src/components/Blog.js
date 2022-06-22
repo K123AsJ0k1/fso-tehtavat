@@ -1,4 +1,4 @@
-//import { useEffect } from 'react'
+import { useState } from 'react'
 //import blogService from '../services/blogs'
 import PropTypes from 'prop-types'
 //import { useEffect } from 'react'
@@ -6,8 +6,6 @@ import PropTypes from 'prop-types'
 const Blog = ({
   blog,
   user,
-  viewable,
-  toggleViewable,
   updateBlog,
   removeBlog
 }) => {
@@ -18,6 +16,12 @@ const Blog = ({
     border: 'solid',
     borderWidth: 1,
     marginBottom: 5
+  }
+
+  const [viewable, setViewable] = useState(false)
+
+  const toggleViewable = () => {
+    setViewable(!viewable)
   }
 
   if (viewable && blog.user.username === user.username) {

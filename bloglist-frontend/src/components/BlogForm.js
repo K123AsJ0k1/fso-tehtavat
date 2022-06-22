@@ -1,10 +1,29 @@
 import { useState } from 'react'
-import blogServices from '../services/blogs'
 
-const BlogForm = ({
-  setMessage,
-  setMessageType
-}) => {
+const BlogForm = ({ createBlog }) => {
+
+  //const [newBlog, setNewBlog] = useState('')
+  const [url, setUrl] = useState('')
+  const [title, setTitle] = useState('')
+  const [author, setAuthor] = useState('')
+
+  //const handleChange = (event) => {
+  //  setNewNote(event.target.value)
+  //}
+
+  const addBlog = (event) => {
+    event.preventDefault()
+    createBlog({
+      url: url,
+      title: title,
+      author: author
+    })
+
+    setUrl('')
+    setTitle('')
+    setAuthor('')
+  }
+  /*
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
@@ -36,6 +55,7 @@ const BlogForm = ({
       }, 5000)
     }
   }
+  */
 
   return(
     <div>
@@ -43,30 +63,33 @@ const BlogForm = ({
       <br/>
       <form onSubmit={addBlog}>
         <div>
-                    title:
+          title:
           <input
             type="text"
             value={title}
             name="title"
             onChange={({ target }) => setTitle(target.value)}
+            placeholder='title'
           />
         </div>
         <div>
-                    author:
+          author:
           <input
             type="text"
             value={author}
             name="author"
             onChange={({ target }) => setAuthor(target.value)}
+            placeholder='author'
           />
         </div>
         <div>
-                    url:
+          url:
           <input
             type="text"
             value={url}
             name="url"
             onChange={({ target }) => setUrl(target.value)}
+            placeholder='url'
           />
         </div>
         <button type="submit">create</button>

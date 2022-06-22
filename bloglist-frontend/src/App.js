@@ -20,6 +20,25 @@ const App = () => {
     setViewable(!viewable)
   }
 
+  const createBlog = async (blog) => {
+    try {
+      await blogService.create(blog)
+      setMessage(`a new blog ${blog.title} by ${blog.author} added`)
+      setMessageType(1)
+      setTimeout(() => {
+        setMessage('')
+        setMessageType(0)
+      }, 5000)
+    } catch (exception) {
+      setMessage('a failure happend in the creation process')
+      setMessageType(2)
+      setTimeout(() => {
+        setMessage('')
+        setMessageType(0)
+      }, 5000)
+    }
+  }
+
   const updateBlog = async (event,blog) => {
     event.preventDefault()
     try {
@@ -127,8 +146,7 @@ const App = () => {
       <br/>
       <Togglable visible={visible} setVisible={setVisible} buttonLabel="create new blog">
         <BlogForm
-          setMessage = {setMessage}
-          setMessageType = {setMessageType}
+          createBlog={createBlog}
         />
       </Togglable>
       {blogs.map(blog =>

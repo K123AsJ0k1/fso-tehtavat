@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Blog from './Blog'
 
-test('regularBlog renders only title and author', () => {
+test('only title and author are rendered', () => {
   const blog = {
     title: 'title',
     author: 'author',
@@ -27,7 +27,7 @@ test('regularBlog renders only title and author', () => {
   expect(element_3).toBeNull()
 })
 
-test('viewedBlog renders title, author, url and likes', async () => {
+test('title, author, url and likes are rendered', async () => {
   const user = {
     username: 'username',
     name: 'name',
@@ -42,19 +42,14 @@ test('viewedBlog renders title, author, url and likes', async () => {
     user: user
   }
 
-  let viewable = false
+  const mockHandler = jest.fn()
 
-  const mockHandler = jest.fn(() => {
-    viewable = true
-  })
-
-  render(<Blog blog={blog} user={user} viewable={viewable} toggleViewable={mockHandler}/>)
+  render(<Blog blog={blog} user={user} toggleViewable={mockHandler}/>)
 
   const user_Session = userEvent.setup()
 
   const button = screen.getByText('view')
   await user_Session.click(button)
-  expect(mockHandler.mock.calls).toHaveLength(1)
 
   const element_1 = screen.queryByText('title author')
   expect(element_1).toBeDefined()
@@ -79,15 +74,17 @@ test('The event handler of the like button is called twice', async () => {
     user: user
   }
 
-  let viewable = true
+  const mockHandler_1 = jest.fn()
+  const mockHandler_2 = jest.fn()
 
-  const mockHandler = jest.fn()
-
-  render(<Blog blog={blog} user={user} viewable={viewable} updateBlog={mockHandler}/>)
+  render(<Blog blog={blog} user={user} toggleViewable={mockHandler_1} updateBlog={mockHandler_2}/>)
 
   const user_Session = userEvent.setup()
+  const view_button = screen.getByText('view')
+  await user_Session.click(view_button)
+
   const like_button = screen.getByText('like')
   await user_Session.click(like_button)
   await user_Session.click(like_button)
-  expect(mockHandler.mock.calls).toHaveLength(2)
+  expect(mockHandler_2.mock.calls).toHaveLength(2)
 })
