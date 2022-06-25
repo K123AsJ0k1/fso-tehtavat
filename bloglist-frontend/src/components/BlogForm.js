@@ -1,15 +1,9 @@
 import { useState } from 'react'
 
 const BlogForm = ({ createBlog }) => {
-
-  //const [newBlog, setNewBlog] = useState('')
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
-
-  //const handleChange = (event) => {
-  //  setNewNote(event.target.value)
-  //}
 
   const addBlog = (event) => {
     event.preventDefault()
@@ -23,39 +17,6 @@ const BlogForm = ({ createBlog }) => {
     setTitle('')
     setAuthor('')
   }
-  /*
-  const [url, setUrl] = useState('')
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-
-  const addBlog = async (event) => {
-    event.preventDefault()
-
-    try {
-      await blogServices.create({
-        url: url,
-        title: title,
-        author: author
-      })
-      setUrl('')
-      setTitle('')
-      setAuthor('')
-      setMessage(`a new blog ${title} by ${author} added`)
-      setMessageType(1)
-      setTimeout(() => {
-        setMessage('')
-        setMessageType(0)
-      }, 5000)
-    } catch (exception) {
-      setMessage('a failure happend in the creation process')
-      setMessageType(2)
-      setTimeout(() => {
-        setMessage('')
-        setMessageType(0)
-      }, 5000)
-    }
-  }
-  */
 
   return(
     <div>
@@ -65,6 +26,7 @@ const BlogForm = ({ createBlog }) => {
         <div>
           title:
           <input
+            id="title"
             type="text"
             value={title}
             name="title"
@@ -75,6 +37,7 @@ const BlogForm = ({ createBlog }) => {
         <div>
           author:
           <input
+            id="author"
             type="text"
             value={author}
             name="author"
@@ -85,6 +48,7 @@ const BlogForm = ({ createBlog }) => {
         <div>
           url:
           <input
+            id="url"
             type="text"
             value={url}
             name="url"
@@ -92,7 +56,7 @@ const BlogForm = ({ createBlog }) => {
             placeholder='url'
           />
         </div>
-        <button type="submit">create</button>
+        <button id="create-button" type="submit">create</button>
       </form>
     </div>
   )
