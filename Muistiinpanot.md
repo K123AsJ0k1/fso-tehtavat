@@ -607,6 +607,241 @@ Huomaa se, että jos HTML komponentti renderöisi tekstin tavalla
 
 Testauskattavuus saadaan helposti selville komennolla CI=true npm test -- --coverage, joka tuo tulokset konsoliin ja primitiivisen HTML repostin hakemistoon coverage/lcov-report.
 
+# End to end -testaus
+
+Tarkastellaan nyt tapoja, joilla voidaan testata järjestelmän toimintaa kokonaisuudessa. Web-sovellusten E2E-testaus tapahtuu käyttäen selainta kirjaston avulla, kuten seleniumilla, jonka avulla voidaan automatisoida testit melkein jokaisella selaimella. Toinen vaihtoehto olisi käyttää headless browseria, eli selainta, jolla ei ole ollenkaan graafista käyttöliittymää. E2E ovat potentiaalisesti kaikkien hyödyllisin testikategoria, sillä ne tutkivat järjestelmää samojen rajapintojen kautta kuin käyttäjät.
+
+On tosin huomattava, että niiden konfiguriointi on haastavampaa kuin yksikkö- ja integraatiotestit. Ne ovat myös melko hitaita, minkä takia suurissa sovelluksissa testaus voi helposti nousta minuutteihin tai jopa tunteihin. Käyttöliittymän kautta tehtävät testit voivat olla myös epäluotettavia, eli osa testeistä menee välillä läpi ja välillä ei, vaikka mitään koodissa ei ole muuttunut. 
+
+E2E-testauksessa cypress kirjasto on nousut suureen suosioon vuoden aikana. Se on Seleniumin nähden paljon helpompi. Se poikkeaa radikaalisti muista E2E-testauksen kirjastoista, sillä Cypress testit ajetaan kokonaan selaimen sisällä, kun taas muissa testit suoritetaan Node-prosesseina rajapintojen kautta. Cypress kirjasto voidaan asentaa komennolla npm install --save-dev cypress. Määritellään seuraava skripti sen käyttämiseksi:
+
+    "cypress:open": "cypress open"
+
+Huomaa, että cypress-testit voidaan sijoittaa joko frtonendin, backendin tai täysin omaan repositorioon. Nämä testit olettavat, etttä testattava järjestelmä on käynnissä testien suorituksessa, eli ne eivät käynnistä sovellusta testien yhteydessä. Tästä syystä lisätään backendille seuraava skripti:
+
+    "start:test": "cross-env NODE_ENV=test node index.js"
+
+Sitten kun backend ja frontend ovat käynnissä, voidaan cypress käynnistää komennolla npm run cypress:open. Ensimmäisellä käynnistyksellä sovellukselle syntyy hakemisto cypress, jonka alihakemistoon integration on tarkoitus sijoittaa testit. Poistetaan sen esimerkki testit ja lisätään seuraava testi:
+
+    describe('Note ', function() {
+        it('front page can be opened', function() {
+            cy.visit('http://localhost:3000')
+            cy.contains('Notes')
+            cy.contains('Note app, Department of Computer Science, University of Helsinki 2022')
+        })
+    })
+
+Tämä testi voidaan suorrittaa avautuneesta ikkunasta. Sen suoritus avaa selaimen ja näyttää, miten sovellus käyttäytyy testin edetessä. Rakenteeltaan testit ovat jestin testien kaltaisia, mutta ainoa ero on test muutos it nimeksi. Tässä cy.visit vie testin käyttämän selaimen määriteltyyn osoitteeseen ja cy.contains etsii sivun sisältä parametrina annettu teksti. Laajennettaan testejä siten, että testi yrittää kirjautua sovellukseen. Lomakkeen avaaminen voidaan tehdä seuraavasti:
+
+    it('login form can be opened', function() {
+        cy.visit('http://localhost:3000')
+        cy.contains('login').click()
+    })
+
+Koska tulevat testit käyttävät samaa sivua, niin siirrettään selaimen aloitus sivulle siirtyminen seuraavaan lohkoon:
+
+    beforeEach(function() {    
+        cy.visit('http://localhost:3000')  
+    })
+
+Komento cy.get mahdollistaa elementtien etsimisen CSS-selektorien avulla, joten input kentät voidaan hakea ja niihin voidaan kirjoittaa seuraavasti:
+
+    it('user can login', function () {
+        cy.contains('login').click()
+        cy.get('input:first').type('mluukkai')
+        cy.get('input:last').type('salainen')
+    }) 
+
+Huomaa, että jos input-kenttiä lisätään, niin tämä testi saattaa hajota luottaessaan kentien järjestykseen. Parempi ratkaisu on yksilöivät id-attribuutit ja hakeaa kentät testeissä niiden perusteella, joten muutetaan kirjautumislomaketta seuraavasti:
+
+    return (
+        <div>
+            <h2>Login</h2>
+            <form onSubmit={handleSubmit}>
+                <div>
+                username
+                <input
+                    id='username'            value={username}
+                    onChange={handleUsernameChange}
+                />
+                </div>
+                <div>
+                password
+                <input
+                    id='password'            type="password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                />
+                </div>
+                <button id="login-button" type="submit">          login
+                </button>
+            </form>
+        </div>
+    )
+
+Testi muuttuu nyt seuraavasti:
+
+    it('user can log in', function() {
+        cy.contains('login').click()
+        cy.get('#username').type('mluukkai')    cy.get('#password').type('salainen')    cy.get('#login-button').click()
+        cy.contains('Matti Luukkainen logged in')  
+    })
+
+Huomaa, että kirjautumislomakkeen avaavaa nappia painetaan seuraavasti:
+
+    cy.contains('login').click()
+
+ja lomakkeen täyttämisen jälkeen se lähetetään napilla
+
+    cy.get('#login-button').click()
+
+Nämä napit ovat koko ajan DOM:issa, mutta niistä vain yksi kerrallaan on näkyvissä. Koska komento cy.contains palauttaa napeista ensimmäisen, niin lomakkeen nappiin lisätty id login-button on tarpeellinen tämän nappin löytämiseksi. Huomataan, että cy aiheuttaa ESLint-virheen, joka voidaan korjata komennolla npm install eslint-plugin-cypress --save-dev ja laajentamalla .eslintrj.js seuraavasti:
+    
+    "env": {
+        "browser": true,
+        "es6": true,
+        "jest/globals": true,
+        "cypress/globals": true    
+    },
+
+    "plugins": [
+        "react", "jest", "cypress"    
+    ],
+
+Lisätään seuraavaksi testi, joka lisää uuden muistiinpanon:
+
+    describe('when logged in', function() {    
+        beforeEach(function() {      
+            cy.contains('login').click()      
+            cy.get('#username').type('mluukkai')      
+            cy.get('#password').type('salainen')      
+            cy.get('#login-button').click()    
+        })
+        it('a new note can be created', function() {      
+            cy.contains('new note').click()      
+            cy.get('input').type('a note created by cypress')     
+            cy.contains('save').click()      
+            cy.contains('a note created by cypress')    
+        })  
+    })
+
+Tämä testi luottaa siihen, että on olemassa ainoastaan yksi input kenttää, minkä takia se hajoaa niiden lisäämisen seurauksesta. Huomaa, että Cypress suorittaa testit siinä järjestyksessä, missä ne ovat testikoodissa. Testin suoritus alkaa myös nollatilanteesta, eli edellisten testien selaimen tilaan tehdyt muutokset nollautuvat.
+
+Jos testaamisessa muokataan tietokantaa, niin paras ratkaisu on sen nollaus ja mahdollinen alustaminen. Huomaa, ettei testeistä ole mahdollista päästä suoraan käsiksi tietokantaan. Lisätään nyt backendin testejä vartten API-endpoint, jolla testit voivat tarvittaessa nollata kannan
+
+    const router = require('express').Router()
+    const Note = require('../models/note')
+    const User = require('../models/user')
+
+    router.post('/reset', async (request, response) => {
+        await Note.deleteMany({})
+        await User.deleteMany({})
+        response.status(204).end()
+    })
+
+    module.exports = router
+
+ja lisätään se backendiin ainoastaan testi-moodissa:
+
+    if (process.env.NODE_ENV === 'test') {  
+        const testingRouter = require('./controllers/testing')  
+        app.use('/api/testing', testingRouter)
+    }
+
+Nyt testien beforeEach voidaan muuttaa seuraavasti:
+
+    beforeEach(function() {
+        cy.request('POST', 'http://localhost:3001/api/testing/reset')    
+        const user = {      
+            name: 'Matti Luukkainen',      
+            username: 'mluukkai',      
+            password: 'salainen'    
+        }    
+        cy.request('POST', 'http://localhost:3001/api/users/', user)     
+        cy.visit('http://localhost:3000')
+    })
+
+Luodaan nyt testi, joka varmistaa kirjautumisyrityksen epäonnistumisen väärällä salasanalla. Se voisi olla muodoltaan:
+
+    it('login fails with wrong password', function() {
+        cy.contains('login').click()
+        cy.get('#username').type('mluukkai')
+        cy.get('#password').type('wrong')
+        cy.get('#login-button').click()
+
+        cy.get('.error')
+            .should('contain', 'wrong credentials')
+            .and('have.css', 'color', 'rgb(255, 0, 0)')
+            .and('have.css', 'border-style', 'solid')
+
+        cy.get('html').should('not.contain', 'Matti Luukkainen logged in')
+    })
+
+Tässä should mahdollistaa monipuolisemman testin kuin contains, sillä nyt voidaan ketjuttaen tarkastaa tekstin lisäksi sen tyyli. Koska jokainen testi suoritetaan alkutilasta, niin hyvin suositeltavaa, että kirjautuminen tehdään UI:n ohi käyttämällä backendiä hyväksi. Tämä voidaan tehdä seuraavasti:
+
+    beforeEach(function() {
+        cy.request('POST', 'http://localhost:3001/api/login', {      
+            username: 'mluukkai', 
+            password: 'salainen'    }).then(response => {      
+                localStorage.setItem('loggedNoteappUser', JSON.stringify(response.body))      
+                cy.visit('http://localhost:3000')    
+        })  
+    })
+
+Huomaa, että tässä cy.request kuten muutkin cy komennot ovat eräänlaisia promiseja. Jos sovellukselle kirjoitetaan lisää testejä, niin kannattaa kirjautuminen määritellä komennoksi. Tehdään tämä tiedostoon cypress/support/commands.js, jonka koodi on seuraava:
+
+    Cypress.Commands.add('login', ({ username, password }) => {
+        cy.request('POST', 'http://localhost:3001/api/login', {
+            username, password
+        }).then(({ body }) => {
+            localStorage.setItem('loggedNoteappUser', JSON.stringify(body))
+            cy.visit('http://localhost:3000')
+        })
+    })
+
+Nyt testi voidaan yksinkertaistaa seuraavasti:
+
+    beforeEach(function() {
+        cy.login({ username: 'mluukkai', password: 'salainen' })  
+    })
+
+Huomaa, että ketjutettu toisena oleva contains jatkaa hakuaan ensimmäisen komennon löytämän komponentin sisältä, eli
+
+    cy.contains('second note')
+            .contains('make important')
+            .click()
+
+ja
+
+    cy.contains('second note')
+    cy.contains('make important').click()
+
+ovat toisistaan erilaisia. Tämän takia kannattaa varmistaa test runneristas, että testit etsivät niitä elementtejö, joita niiden on tarkoitus tutkia. Huomio se, että napin etsimiseen käytetään komentoa find, kuten:
+
+    cy.contains('second note').parent().find('button').click()
+
+Vielä viimeiseksi, vaikka cypress vaikuttaa javaScript koodilta, niin sitä se ei ole. Testiä suorittaessa cypress lisää jokaisen cy.komennon suoritusjonoon, minkä takia button.click() palauttaa undefined. Cypress komentojen ollessa promisen kaltaisia, tarvitaan then komento palautettujen arvojen käsittelyyn. Esimerkiksi seuraava testi tulostaa kaikkien nappien lukumäärän ja klikkaaa niistä ensimmäistä:
+
+    it('then example', function() {
+        cy.get('button').then( buttons => {
+            console.log('number of buttons', buttons.length)
+            cy.wrap(buttons[0]).click()
+        })
+    })
+
+Cypress testit voidaan myös ajaa komentorivillä, kun lisätään skripti "test:e2e": "cypress run". Huomaa vielä se, että testien suorituksesta tallentuu video hakemistoon cypress/videos/, joka kannattaa gitignorata.
+
+---
+
+
+
+
+
+
+
+
+
+
 
 
 
