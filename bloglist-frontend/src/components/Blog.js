@@ -1,7 +1,5 @@
 import { useState } from 'react'
-//import blogService from '../services/blogs'
 import PropTypes from 'prop-types'
-//import { useEffect } from 'react'
 
 const Blog = ({
   blog,
@@ -26,7 +24,7 @@ const Blog = ({
 
   if (viewable && blog.user.username === user.username) {
     return (
-      <div className='viewableUserBlog' style={blogStyle}>
+      <div className='blog' style={blogStyle}>
         <div>
           {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
           <br/>
@@ -44,13 +42,13 @@ const Blog = ({
 
   if (viewable) {
     return (
-      <div className='viewableBlog' style={blogStyle}>
+      <div className='blog' style={blogStyle}>
         <div>
           {blog.title} {blog.author} <button onClick={toggleViewable}>hide</button>
           <br/>
           {blog.url}
           <br/>
-        likes {blog.likes} <button onClick={event => updateBlog(event,blog)}>like</button>
+          likes {blog.likes} <button onClick={event => updateBlog(event,blog)}>like</button>
           <br/>
           {blog.user.name}
         </div>
@@ -60,7 +58,7 @@ const Blog = ({
 
   return (
     <div style={blogStyle}>
-      <div className='regularBlog'>
+      <div className='blog'>
         {blog.title} {blog.author} <button onClick={toggleViewable}>view</button>
       </div>
     </div>
