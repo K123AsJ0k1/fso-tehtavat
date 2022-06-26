@@ -33,3 +33,7 @@ Tai
 Osa 4
 
 ![Tehtävät 4.1-4.23](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%204/Teht%C3%A4v%C3%A4t/blogilista)
+
+Osa 5
+
+![Tehtävät 5.1-5.22](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%205/Teht%C3%A4v%C3%A4t)
