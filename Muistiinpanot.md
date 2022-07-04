@@ -1,0 +1,201 @@
+# Flux-arkkitehtuuri ja Redux
+
+Olemme määritteleet komponenttien tilat ja metodit sovelluksen juurikomponentissa, mutta sovelluksen kasvaessa tämä muuttuu haasteelliseksi. Ratkaisu tähän on flux-arkkitehtuuri, jossa sovelluksen tilan hallinta erotetaan kokonaan komponenttien ulkopuolisiin varashoitin, eli storeihin. Storessa olevaa tilaa ei muuteta suoraan, vaan tapahtumien eli actionien avulla. Actionin muuttaessa storen tilaa näkymät renderöidään ja sovelluksen käytön vaatimat muutokset tehdään actionieni avulla, eli renderöityminen tapahtuu.
+
+Tulemme käyttämään redux-kirjastoa flux:in toteuttamiseksi, joten tutustutaan siihen laskuri sovelluksen avulla. Redux voidaan asentaa komennolla npm install redux. Reduxissa sovelluksen tila talletetaan storeen, mutta sovelluksen kannalta ainoastaan yhteen storen tallentamaan JavaScript-objektiin. Monimutkaisemmassa tilanteessa eri asiat voitaisiin tallentaa storessa olevaan olioon erillisinä kenttinä. Storeja muutetaan actionien avulla, jotka ovat oliota, joilla on vähintään tyypin määrittelevä kenttä type, kuten:
+
+    {
+        type: 'INCREMENT'
+    }
+
+Huomaa, että actioneihin liittyessä dataa niihin määritellään muitakin kenttiä, mutta nyt tarvitaan ainoastaan tyyppikenttä. Actionien vaikutus määritellään reducerin avulla, joka on funktio, jonka parametrit ovat staten nykyisen tilan, actionin ja joka palautta staten uuden tilan. Sovelluksen reducer voisi olla:
+
+    const counterReducer = (state, action) => {
+        if (action.type === 'INCREMENT') {
+            return state + 1
+        } else if (action.type === 'DECREMENT') {
+            return state - 1
+        } else if (action.type === 'ZERO') {
+            return 0
+        }
+
+        return state
+    }
+
+Huomaa, että reducereissa on tapana if:n sijasta käyttää switch-komentoa, joten määritellään state oletusarvoksi 0 ja korjataan se muotoon:
+
+    const counterReducer = (state = 0, action) => {
+        switch (action.type) {
+            case 'INCREMENT':
+                return state + 1
+            case 'DECREMENT':
+                return state - 1
+            case 'ZERO':
+                return 0
+            default: // jos ei mikään ylläolevista tullaan tänne
+            return state
+        }
+    }
+
+Reducereita ei ole tarkoitus koskaan kutsua sovelluksen koodissa, joten se annetaan parametrinea storen luovalle createStore-funktiolle:
+
+    import { createStore } from 'redux'
+
+    const counterReducer = (state = 0, action) => {
+    // ...
+    }
+
+    const store = createStore(counterReducer)
+
+Nyt store käyttää reduceria käsitelläkseen actioneja, jotka lähetetään storelle dispatch-methodilla, kuten store.dispatch({type: 'INCREMENT'}). Storen tila saadaan selville metodilla getState. Kolmas tärkeä metodi on subscribe, jonka avulla voidaan määritellä takaisinkutsufunktiota, joita store kutsuu sen tilan muuttumisen yhteydessä, kuten:
+
+    store.subscribe(() => {
+        const storeNow = store.getState()
+        console.log(storeNow)
+    })
+
+Nyt laskuri sovellus voisi olla kokonaisuudessaan muodoltaan:
+
+    import React from 'react'
+    import ReactDOM from 'react-dom/client'
+
+    import { createStore } from 'redux'
+
+    const counterReducer = (state = 0, action) => {
+        switch (action.type) {
+            case 'INCREMENT':
+                return state + 1
+            case 'DECREMENT':
+                return state - 1
+            case 'ZERO':
+                return 0
+            default:
+                return state
+        }
+    }
+
+    const store = createStore(counterReducer)
+
+    const App = () => {
+        return (
+            <div>
+            <div>
+                {store.getState()}
+            </div>
+            <button 
+                onClick={e => store.dispatch({ type: 'INCREMENT' })}
+            >
+                plus
+            </button>
+            <button
+                onClick={e => store.dispatch({ type: 'DECREMENT' })}
+            >
+                minus
+            </button>
+            <button 
+                onClick={e => store.dispatch({ type: 'ZERO' })}
+            >
+                zero
+            </button>
+            </div>
+        )
+    }
+
+    const renderApp = () => {
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+    }
+
+    renderApp()
+    store.subscribe(renderApp)
+
+Huomaa, että tässä App renderöi laskurin arvon kysymällä sitä storesta metodilla store.getState() ja React ei osaa automaattisesti renderöidä sovellusta uudelleen storen tilan arvon muuttuessa, minkä takia renderApp kuuntelee storen muutoksia metodilla store.subscribe ja se on jouduttu kutsumaan heti alussa metodia renderApp ensimmäisen renderöinnin tapahtumiseksi.
+
+Redux olettaa, että reducerit ovat puhtaita funktioita, eli ne ivät aiheuta mitään sivuvaikutuksia ja palauttavat aina saman vastauksen samoilla parametreilla. Tämän takia tapaus state.push(action.data) ei ole sallittu, minkä takia on ensiki luotava uusi taulukko, jonka sisältönä on vanhan taulukon alkiot ja lisättävä alkio. Reducen tilan tulee koostua muuttumattomista immutable olioista, joten vanhat oliot korvataan uudella oliolla.
+
+Varmistaaksemme reducereiden oikeanoppisen kirjoituksen, asennettaan kirjasto deep-freeze komennolla npm install --save-dev deep-freeze. Sen komento deepFreeze(state) varmistaa, että reducer ei muuta parametrina olevaa store tilaa. On suositeltavaa luoda testit ennen koodin refaktorointia redux muotoon. On suositeltavaa huomioda myös array spread syntaksi, jossa: 
+
+    const luvut = [1, 2, 3]
+    [...luvut, 4, 5] //[1, 2, 3, 4, 5]
+    [luvut, 4, 5] // [[1,2,3], 4, 5]
+    
+ja 
+
+    const luvut = [1, 2, 3, 4, 5, 6]
+
+    const [eka, toka, ...loput] = luvut
+
+    console.log(eka)    // tulostuu 1
+    console.log(toka)   // tulostuu 2
+    console.log(loput)  // tulostuu [3, 4, 5, 6]
+
+Jos halutaan luoda lomakkeita reduxilla, niin on luotava ei-kontrolloitu lomake. Nämä omistavat tiettyjä rajoitteita. Ne eivät mahdollista lennossa annettavia validointi viestejä, lähetysnapin disabloimista sisällön perusteella ja etc. Lomakkeen funktio voisi olla muodoltaan:
+
+    addNote = (event) => {
+        event.preventDefault()
+        const content = event.target.note.value  
+        event.target.note.value = ''
+        store.dispatch({
+            type: 'NEW_NOTE',
+            data: {
+            content,
+            important: false,
+            id: generateId()
+            }
+        })
+    }
+
+Tässä on huomattava, että syötekentällä on oltava nimi, jotta sen arvon on mahdollista päästä käsiksi. Taas tärkeyden muuttamiseen käsittelijä on yksinkertainen:
+
+    toggleImportance = (id) => {
+        store.dispatch({
+            type: 'TOGGLE_IMPORTANCE',
+            data: { id }
+        })
+    }
+
+Actioneita luovia funktioita kutsutaan action creatoreiksi, joiden avulla App voidaan yksinkertaistaa muotoon:
+
+    const addNote = (event) => {
+        event.preventDefault()
+        const content = event.target.note.value
+        event.target.note.value = ''
+        store.dispatch(createNote(content))  
+    }
+  
+    const toggleImportance = (id) => {
+        store.dispatch(toggleImportanceOf(id))  
+    }
+
+Jos sovellus tulee monimutkaiseksi, niin voidaan Redux-store sovelluksen komponenteille välittää tarvittavat tiedot usealla tavalla. Uusin ja helpoin tapa on react-redux-kirjaston hooks-rajapinta, joka voidaan asentaa komennolla npm install react-redux. Uutta tässä on Provider komponentti ja storen siirtäminen providerin attribuutiksi. Huomaa, että moduulilla voi olla vain yksi default export, mutta usseita normaaleja exporteja, nyt store.dispatch tapahtuu useDispatch avulla ja tietoihin päästään käsiksi useSelectorilla.
+
+Vielä viimeiseksi, komponentti
+
+    const Note = ({ note, handleClick }) => {
+        return(
+            <li onClick={handleClick}>
+            {note.content} 
+            <strong> {note.important ? 'important' : ''}</strong>
+            </li>
+        )
+    }
+
+on nimeltään presentational komponentti ja komponentti
+
+    const Notes = () => {
+        const dispatch = useDispatch()  const notes = useSelector(state => state)
+        return(
+            <ul>
+            {notes.map(note =>
+                <Note
+                key={note.id}
+                note={note}
+                handleClick={() => 
+                    dispatch(toggleImportanceOf(note.id))
+                }
+                />
+            )}
+            </ul>
+        )
+    }
+
+on nimeltään container komponentti. Presentationalit ovat siis yksinkertaisia entiteettejä ja containerit taas sisältävät niitä ja sovelluslogiikan.
