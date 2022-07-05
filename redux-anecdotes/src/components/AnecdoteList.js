@@ -2,11 +2,12 @@ import { incrementVote } from '../reducers/anecdoteReducer'
 import { useSelector, useDispatch } from 'react-redux'
 
 const AnecdoteList = () => {
-    const anecdotes = useSelector(state => state)
+    const anecdotes = useSelector(state => state.anecdotes)
     const dispatch = useDispatch()
 
     const vote = (id) => {
         dispatch(incrementVote(id))
+        //dispatch({ type: 'anecdotes/incrementVote', payload: id})
     }
 
     const compareVotes = (a,b) => {
@@ -18,7 +19,7 @@ const AnecdoteList = () => {
         }
         return 0
     }
-
+    
     return (
         <div>
             {anecdotes.map(anecdote =>

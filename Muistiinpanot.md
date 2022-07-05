@@ -199,3 +199,159 @@ on nimeltään presentational komponentti ja komponentti
     }
 
 on nimeltään container komponentti. Presentationalit ovat siis yksinkertaisia entiteettejä ja containerit taas sisältävät niitä ja sovelluslogiikan.
+
+# Monta reduseria
+
+Jos haluamme lisätä tarkasteltuun sovellukseen tärkeyden, niin hyvä ratkaisu on
+
+    const filterReducer = (state = 'ALL', action) => {
+        switch (action.type) {
+            case 'SET_FILTER':
+            return action.filter
+            default:
+            return state
+        }
+    }
+
+, jossa filtterin arvon asettavat actionit ovat muotoa:
+
+    {
+        type: 'SET_FILTER',
+        filter: 'IMPORTANT'
+    }
+
+Tämän lisäksi määritellään action creator funktio:
+
+    export const filterChange = filter => {
+        return {
+            type: 'SET_FILTER',
+            filter,
+        }
+    }
+
+Nyt voidaan luoda yhdistetty reducer tiedosstossa index.js:
+
+    import React from 'react'
+    import ReactDOM from 'react-dom/client'
+    import { createStore, combineReducers } from 'redux'import { Provider } from 'react-redux' 
+    import App from './App'
+
+    import noteReducer from './reducers/noteReducer'
+    import filterReducer from './reducers/filterReducer'
+    
+    const reducer = combineReducers({  
+        notes: noteReducer,  
+        filter: filterReducer
+    })
+    
+    const store = createStore(reducer)
+
+    console.log(store.getState())
+
+    ReactDOM.createRoot(document.getElementById('root')).render(
+        <Provider store={store}>
+            <App />
+        </Provider>,
+        document.getElementById('root')
+    )
+
+Huomaa, että yhdistetty reducer toimii siten, että jokainen action käsitellään kaikissa yhdistetyn reducerin osissa. Tämän takia on mahdollista luoda tilanteita, joita käsittelevät useampi reducer. Tässä on vielä muutettava notes muotoon const notes = useSelector(state => state.notes). Eriytyteetään vielä filtteri omaksi komponentiksi seuraavasti:
+
+    import { filterChange } from '../reducers/filterReducer'
+    import { useDispatch } from 'react-redux'
+
+    const VisibilityFilter = (props) => {
+        const dispatch = useDispatch()
+
+        return (
+            <div>
+            all    
+            <input 
+                type="radio" 
+                name="filter" 
+                onChange={() => dispatch(filterChange('ALL'))}
+            />
+            important   
+            <input
+                type="radio"
+                name="filter"
+                onChange={() => dispatch(filterChange('IMPORTANT'))}
+            />
+            nonimportant 
+            <input
+                type="radio"
+                name="filter"
+                onChange={() => dispatch(filterChange('NONIMPORTANT'))}
+            />
+            </div>
+        )
+    }
+
+    export default VisibilityFilter
+
+Nyt on enää komponenttia notes muutettava seuraavasti:
+
+  const notes = useSelector(state => {    
+    if ( state.filter === 'ALL' ) {      
+        return state.notes    
+    }    
+    return state.filter  === 'IMPORTANT'       
+        ? state.notes.filter(note => note.important)      
+        : state.notes.filter(note => !note.important)  
+    })
+
+Nyt on nähty, kuinka reduxin konfigurkointi ja tilanhallinta vaatii melko paljon vaivannäköä, kuten reducereiden ja action creatorien toisteisessa koodissa. Ratkaisu tähän on Redux Toolkit kirjasto, joka yksinkertaistaa huomattavasti redux-storen luontia ja tarjoaa merkittävästi tilanhallintaa helpottavia työkaluja. Se voidaan asentaa komennolla npm install @reduxjs/toolkit. Sovelluksen index.js voidaan muuttaa muotoon:
+
+    import React from 'react'
+    import ReactDOM from 'react-dom/client'
+    import { Provider } from 'react-redux'
+    import { configureStore } from '@reduxjs/toolkit'import App from './App'
+
+    import noteReducer from './reducers/noteReducer'
+    import filterReducer from './reducers/filterReducer'
+
+    const store = configureStore({ 
+         reducer: {    
+            notes: noteReducer,    
+            filter: filterReducer  
+        }
+    })
+
+Nyt reducerit ja action creatorit voidaan luoda createSlice funktiolla seuraavasti:
+
+    import { createSlice } from '@reduxjs/toolkit'
+
+    const noteSlice = createSlice({  
+        name: 'notes',  
+        initialState,  
+        reducers: {    
+            createNote(state, action) {      
+                const content = action.payload      
+                state.push({        
+                    content,       
+                    important: false,        
+                    id: generateId(),      
+                    })    
+                },    
+                toggleImportanceOf(state, action) {      
+                    const id = action.payload      
+                    const noteToChange = state.find(n => n.id === id)      
+                    const changedNote = {         
+                        ...noteToChange,         
+                        important: !noteToChange.important       
+                    }      
+                    return state.map(note =>        
+                        note.id !== id ? note : changedNote       
+                    )         
+                }  
+            },
+        }) 
+
+Tässä parametri name määrittelee etuliitteen, jota käytetään actioneiden type-arvoissa. Parametrin arvona on hyvä käyttää muiden reducereiden kesken uniikkia nimeä, jotta type-arvoissa ei tapahtuisi yhteentörmäyksiä. Parametri initialState alustaa tilan. Parametri reducers määrittelee reducerin objetkina, jonka funktiot käsittelevät tietyn actionin aiheuttamat tilamuutokset. Huomaa, että funktiossa action.payload on action creatorin kutsutta annettu argumentti.
+
+Huomaa, että tässä käytetään staten sijasta push metodia. Redux Toolkit käyttää createSlice funktion määrittelyssä Immer kirjastoa, joka mahdollistaa state-argumentin mutatoinnin. Se muodostaa mutatoidun tilan perusteella uuden immutable tilan, joten tilamuutosen immutabiliteetti säilyy. Tila voidaan myös muuttaa toggleImportanceOf tavalla, mutta mutatointi on hyödyllinen monimutkaisen tilan päivityksessä. Reducer on palautetussa objektissa noteSlice.reducer, joten:
+
+    export const { createNote, toggleImportanceOf } = noteSlice.actions
+    export default noteSlice.reducer
+
+Chromen on asennettavissa Redux DevTools, jonka avulla storen tilaa ja sen actioneita voidaan seurata selaimen konsolista. Redux Toolkitin configureStore funktion avulla luodusssa storessa tämä on automaattisesti käytössä ilman ylimääräistä konfiguraatiota. Ajaessasi sovellusta aukaise vain konsoli devtoolsien käyttöön. 
