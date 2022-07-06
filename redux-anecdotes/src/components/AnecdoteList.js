@@ -7,7 +7,6 @@ const AnecdoteList = () => {
 
     const vote = (id) => {
         dispatch(incrementVote(id))
-        //dispatch({ type: 'anecdotes/incrementVote', payload: id})
     }
 
     const compareVotes = (a,b) => {
