@@ -1,4 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
+//import { setNotification } from './notificationReducer'
+//import { useDispatch } from 'react-redux'
 
 const anecdotesAtStart = [
   'If it hurts, do it more often',
@@ -20,23 +22,18 @@ const asObject = (anecdote) => {
 }
 
 const initialState = anecdotesAtStart.map(asObject)
-//let givenAnectode = 'testi'
 
 const anecdoteSlice = createSlice({
   name: 'anecdotes',
   initialState,
   reducers: {
-    incrementVote(state,action) {
+    incrementVote (state,action) {
       return state.map(anecdote => anecdote.id === action.payload ? {...anecdote, votes: anecdote.votes + 1} : anecdote)
     },
-    createAnectode(state, action) {
-      //givenAnectode = action.payload
+    createAnectode (state,action) {
       return state.concat(asObject(action.payload))
     },
-    getAnectode(state, action) {
-      return 'testi'
-    }
-  }
+  },
 })
 
 export const { createAnectode, incrementVote, getAnectode } = anecdoteSlice.actions
