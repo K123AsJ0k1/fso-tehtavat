@@ -355,3 +355,76 @@ Huomaa, että tässä käytetään staten sijasta push metodia. Redux Toolkit k�
     export default noteSlice.reducer
 
 Chromen on asennettavissa Redux DevTools, jonka avulla storen tilaa ja sen actioneita voidaan seurata selaimen konsolista. Redux Toolkitin configureStore funktion avulla luodusssa storessa tämä on automaattisesti käytössä ilman ylimääräistä konfiguraatiota. Ajaessasi sovellusta aukaise vain konsoli devtoolsien käyttöön. 
+
+# Redux-sovelluksen kommunikointi palvelimen kanssa
+
+Luodaan nyt sovellukselle kyky hyödyntää muistiinpanoja tallentavaa backendia. Tehdään tämä hyödyntämällä ennestään tuttua JSON serveriä. Luodaan ensiksi projektin juureen tiedostoon db.json muodoltaan:
+
+    {
+        "notes": [
+            {
+            "content": "the app state is in redux store",
+            "important": true,
+            "id": 1
+            },
+            {
+            "content": "state changes are made with actions",
+            "important": false,
+            "id": 2
+            }
+        ]
+    }
+
+Projektiin voidaan asentaa JSON Server komennolla npm install json-server --save-dev, jonka jälkeen lisätään tiedostoon package.json osaan scripts rivi "server": "json-server -p3001 --watch db.json". Nyt JSON server voidaan käynnistää komennolla npm run server. Luodaan nyt tuttuun tapaan axioksin avulla backendistä dataa hakeva metodi tiedosto services/notes.js:
+
+    import axios from 'axios'
+
+    const baseUrl = 'http://localhost:3001/notes'
+
+    const getAll = async () => {
+        const response = await axios.get(baseUrl)
+        return response.data
+    }
+
+    export default { getAll }
+
+Muista, että axios voidaan asentaa projektiin komennolla npm installa axios. Muutetaan nyt noteReducerin tilan alustus siten, että oletusarvoisesti muistiinpanoja ei ole, eli initialState: []. Lisätään vielä uusia action muistiinpano-objektin lisäämiseksi:
+
+    appendNote(state, action) {      
+        state.push(action.payload)    
+    }
+
+Nopea tapa saada storen tila alustettua palvelimella olevaan dataan perusteella on hakea muistiinpanot tiedostossa index.js ja dispatchata niille yksitellen:
+
+    noteService.getAll().then(notes =>  
+        notes.forEach(note => {    
+            store.dispatch(appendNote(note))  
+        })
+    )
+
+Tämä tosin voidaan korvata lisäämällä actioni:
+
+    setNotes(state, action) {      
+        return action.payload    
+    }
+
+Huomaa, että tässä awaitin sijasta käytettiin promiseja ja then metodia siksi, että await toimii ainoastaan async funktioiden sisällä. Siirrettään nyt tämä koodi App seuraavasti:
+
+    const dispatch = useDispatch()
+    useEffect(() => {    
+        noteService      
+            .getAll().then(notes => dispatch(setNotes(notes)))  
+    }, [dispatch])
+
+Laajennettana koodia vielä siten, että se mahdollistaa uusien muistiinpanojen luomisen:
+
+    const createNew = async (content) => {  
+        const object = { content, important: false }  
+        const response = await axios.post(baseUrl, object)  
+        return response.data
+    }
+
+
+
+
+
