@@ -1,18 +1,32 @@
 import { useSelector } from 'react-redux'
+import { useState, useEffect } from 'react'
 
 const Notification = () => {
-  const notification = useSelector(state => state.notifications)
-  
   const style = {
     border: 'solid',
     padding: 10,
     borderWidth: 1
   }
-  return (
-    <div style={style}>
-      {notification}
-    </div>
-  )
+  const [visible, setVisible] = useState(false)
+  const notification = useSelector(state => state.notifications)
+  
+  useEffect(() => {
+    if (notification !== '') {
+      setVisible(true)
+      setTimeout(() => {
+        setVisible(false)
+    }, 5000)
+    }
+  }, [notification])
+  
+  if (visible) {
+    return (
+      <div style={style}>
+        {notification}
+      </div>
+    )
+  }
+  return null
 }
 
 export default Notification
