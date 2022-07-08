@@ -1,6 +1,7 @@
 //import { useSelector } from 'react-redux'
 import { connect } from 'react-redux'
 import { useState, useEffect } from 'react'
+import { set } from '../reducers/notificationReducer'
 
 const Notification = (props) => {
   const style = {
@@ -15,9 +16,8 @@ const Notification = (props) => {
   useEffect(() => {
     if (props.notification !== '') {
       setVisible(true)
-      setTimeout(() => {
-        setVisible(false)
-    }, 5000)
+    } else {
+      setVisible(false)
     }
   }, [props.notification])
   
