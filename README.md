@@ -40,5 +40,5 @@ Osa 5
 
 Osa 6 
 
-![Tehtävät](6.1-6.2)(https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%206/Teht%C3%A4v%C3%A4t/unicafe-redux)
-![Tehtävät](6.3-6.21)(https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%206/Teht%C3%A4v%C3%A4t/redux-anecdotes)
+![Tehtävät 6.1-6.2](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%206/Teht%C3%A4v%C3%A4t/unicafe-redux)
+![Tehtävät 6.3-6.21](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%206/Teht%C3%A4v%C3%A4t/redux-anecdotes)
