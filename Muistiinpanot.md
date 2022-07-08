@@ -424,6 +424,106 @@ Laajennettana koodia vielä siten, että se mahdollistaa uusien muistiinpanojen 
         return response.data
     }
 
+Sovelluksen nykyinen lähestymistapa on melko hyvä, mutta se on ikävä, sillä kommunikointi tapahtuu komponentit määrittelevien funktioiden koodissa. Parempi ratkaisu olisi abstrahoida siten, että tarvitsi ainoastaan kutsua sopivaa action creatoria. Alustus voisi tapahtua koodilla
+
+    const App = () => {
+        const dispatch = useDispatch()
+
+        useEffect(() => {
+            dispatch(initializeNotes())
+        }, [dispatch]) 
+        
+        // ...
+    }
+
+ja muistiinpanon luonti koodilla
+
+    const NewNote = () => {
+        const dispatch = useDispatch()
+        
+        const addNote = async (event) => {
+            event.preventDefault()
+            const content = event.target.note.value
+            event.target.note.value = ''
+            dispatch(createNote(content))
+        }
+
+    // ...
+    }
+
+Näissä komponenteissa komponentit dispatchavat ainoastaan actionit välittämättä siitä, mitä taustalla todellisuudessa tapahtuu. Tämän kaltaieten asynkronisten actioneiden käyttö onnistuu Redux Thunk-kirjaston avulla, jonka käyttö ei vaadi ylimääräistä konfiguraatiota, kun Redux-store on luotu Redux Toolkitin configureStore funktiolla. Kirjasto voidaan asentaa komennolla npm install redux-thunk. Sen ansiosta on mahdollista toteuttaa asynkronisia action creatoreja, kuten:
+
+    import noteService from '../services/notes'
+
+    const noteSlice = createSlice(/* ... */)
+
+    export const { createNote, toggleImportanceOf, setNotes, appendNote } = noteSlice.actions
+
+    export const initializeNotes = () => {  
+        return async dispatch => {    
+            const notes = await noteService.getAll()    
+            dispatch(setNotes(notes))  
+        }
+    }
+
+    export default noteSlice.reducer
+
+Nyt App voidaan määritellä seuraavasti:
+
+    const App = () => {
+        const dispatch = useDispatch()
+
+        useEffect(() => {    
+            dispatch(initializeNotes())   
+        }, [dispatch]) 
+        
+        return (
+            <div>
+            <NewNote />
+            <VisibilityFilter />
+            <Notes />
+            </div>
+        )
+    }
+
+Tämä ratkaisu on paljon parempi. Korvataan vielä createSlice-funktion avulla toteutettu createNote-action creator seuraavasti:
+
+    reducers: {
+        toggleImportanceOf(state, action) {      
+            const id = action.payload      
+            const noteToChange = state.find(n => n.id === id)      
+            const changedNote = {         
+                ...noteToChange,         
+                important: !noteToChange.important       
+            }     
+            return state.map(note =>        
+                note.id !== id ? note : changedNote       
+            )         
+        },    
+        appendNote(state, action) {      
+            state.push(action.payload)    
+        },    
+        setNotes(state, action) {      
+            return action.payload    
+        }  
+    },
+
+    export const { toggleImportanceOf, appendNote, setNotes } = noteSlice.actions
+
+    export const createNote = content => {  
+        return async dispatch => {    
+            const newNote = await noteService.createNew(content)    
+            dispatch(appendNote(newNote))  
+        }
+    }
+
+Nyt NewNote muuttuu seuraavasti:
+
+    dispatch(createNote(content))
+
+    
+
+
 
 
 
