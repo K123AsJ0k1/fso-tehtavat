@@ -522,8 +522,142 @@ Nyt NewNote muuttuu seuraavasti:
     dispatch(createNote(content))
 
     
+# Connect
+
+Tarkastellaan lopuksi React Reduct kirjaston connect funktiota. Uusissa sovelluksissa kannattaa käyttää sen sijasta hook-apia (useDispatch, useSelector), mutta connect funktion tuntemisesta on hyötyä vanhempaa reduxia käyttävien projektien ylläpidossa. Luodaan ensiksi yhdistetty komponentti lisäämällä nämä komponenttiin Notes:
 
 
+    import { connect } from 'react-redux'
+    
+    const ConnectedNotes = connect()(Notes)
+    export default ConnectedNotes
+
+Funktion connect ensimmäisenä parametrina voidaan määritellä funktio mapStateToProps, joka liittää joitakin storen tilan perusteella määriteltyjä asioita yhdistetyn komponentit propseiksi. Esimeriksi:
+
+    const Notes = (props) => {  
+        const dispatch = useDispatch()
+    
+        const notesToShow = () => {    
+            if ( props.filter === 'ALL') {      
+                return props.notes    
+            }        
+            
+            return props.filter  === 'IMPORTANT'       
+                ? props.notes.filter(note => note.important)      
+                : props.notes.filter(note => !note.important)  
+        }
+
+        return (
+            <ul>
+            {notesToShow().map(note =>        
+                <Note
+                key={note.id}
+                note={note}
+                handleClick={() => 
+                    dispatch(toggleImportanceOf(note.id))
+                }
+                />
+            )}
+            </ul>
+        )
+    }
+
+    const mapStateToProps = (state) => {
+        return {
+            notes: state.notes,
+            filter: state.filter,
+        }
+    }
+
+    const ConnectedNotes = connect(mapStateToProps)(Notes)
+    export default ConnectedNotes
+
+Tässä Notes sisällä voidaan viitata storen tilaan propsien kautta, joten props.notes tuo muistiinpanot ja props.filter tuo filter kentän, eli ne antavat suoran pääsyn. UseSelector on nyt korvattu, joten tarkastellaan useDispatch korvausta. Connect funktion toisena parametrina voidaan määritellä mapDispatchToProps, joka on joukko action creator funktioita, jotka välitetään propseina. Lisätään connectaukseen seuraavat asiat:
+
+    const mapDispatchToProps = {  toggleImportanceOf,}
+
+    const ConnectedNotes = connect(
+        mapStateToProps,
+        mapDispatchToProps
+    )(Notes)
+
+Nyt, koodi dispatch(toggleImportanceOf(note.id)) korvataan props.toggleImportanceOf(note.id). Huomaa, että sen propsien suoran viittauksen lisäksi se viittaa actioneihin, jonka avulla storeen voidaan dispatchata eri actioneita. Jos komponentti ei tarvitse storen tilasta mitään, niin connect funktion ensimmäiseksi parametriksi laitetaan null. Tarkastellaan vielä seuraavaa asiaa:
+
+    import { connect } from 'react-redux' 
+    import { createNote } from '../reducers/noteReducer'
+    const NewNote = (props) => {
+        
+        const addNote = async (event) => {
+            event.preventDefault()
+            const content = event.target.note.value
+            event.target.note.value = ''
+            props.createNote(content)  }
+
+            return (
+                <form onSubmit={addNote}>
+                <input name="note" />
+                <button type="submit">add</button>
+                </form>
+            )
+    }
+
+    export default connect(
+        null, 
+        { createNote }
+    )(NewNote)
+
+Tässä koodissa voi hämmentyä siitä, että createNotes on käytettävissä kaksi eri versiota. Funktioon on viitattava propsien kautta, eli props.createNote. Taas import lause mahdollistaa suoran viittauksen createNoten, mutta tätä ei tule tehdä, sillä se ei sisällä dispatchausta. Tämä ero huomataan seuraavasti konsolista:
+
+    const NewNote = (props) => {
+        console.log(createNote)
+        console.log(props.createNote)
+
+        const addNote = (event) => {
+            event.preventDefault()
+            const content = event.target.note.value
+            event.target.note.value = ''
+            props.createNote(content)
+        }
+
+        // ...
+    }
+
+Huomaa, että määrittelyssä
+
+    export default connect(
+        null,
+        { createNote }
+    )(NewNote)
+
+dispatchataan uuden muistiinpanon lisäys ssuorana komennolla props.createNote('uusi muistiinpano'). MapDispatchToProps kenttinä ei voi antaa mitä tahansa funktioita, vaan funktion on oltava action creator, eli redux-actionin palauttava funktio. Tässä mapDispatchToProps on nyt olio, sillä 
+
+    {
+        createNote
+    }
+
+on lyhyempi tapa määritellä olioliteraali:
+
+    {
+        createNote: createNote
+    }
+
+Tässä voitaisiin myös määritellä pidemmän kaavan kautta:
+
+    const mapDispatchToProps = (dispatch) => {  
+        return {    
+            createNote: (value) => {      
+                dispatch(createNote(value))    
+            },  
+        }
+    }
+
+Tässä funktion paluuarvona on olio, joka määrittelee joukon funktiota, jotka annetaan propseiksi. Useimmissa tapauksissa onneksi riittää mapDispatchToProps:in yksinkertaisempi muoto, mutta on olemassa tilanteita, joissa monimutkaisempi muoto on tarpeen. 
+
+Tarkastellaan vielä presentational vs container jaottelua react sovelluksissa, eli näkymästä huolehtiva vs toiminnasta huolehtiva. Tämän ajattelu tavan edut ovat helpompi sovelluksen ymmärrys, helpompi uudelleen käyttö ja presentional mahdollistaa sovelluksen paletin. Kannattaa myös huomioda termi higher-order componenti, jotka ovat funktiota, jotka haluavat parametriksi komponentteja muuttuakseen komponenteiksi. Tämän suosio on tosin kääntynyt laskuun hook-perustan takia.
+
+Nyt saaduilla kurssi tiedoilla pystymme käytämmään reactia oikein. React keskittyy pelkästään näkymien muodostamiseen ja sovelluksen tilaan, kun taas sovelluslogiikka on eristetty kokonaan sen ulkopuolelle, reduxin ja action reducereihin. Huomaa, ettei ole olemassa hopea luotia jokaiseen sovellus ongelmaan. Sovelluksen tilan hallintaa on suunniteltava tarpeen mukaan, eikä reduxia välttämättä tarvitse yhtään hyvän sovelluksen luomiseksi, sillä se voidaan tehdä myös contex apia ja useReducer hookeina. Huomio omat tarpeet ja eri työkalujen tarpeet.
+
+---
 
 
 

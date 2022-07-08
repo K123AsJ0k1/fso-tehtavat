@@ -6,7 +6,7 @@ import filterReducer from './reducers/filterReducer'
 const store = configureStore({
     reducer: {
         anecdotes: anecdoteReducer,
-        notifications: notificationReducer,
+        notification: notificationReducer,
         filter: filterReducer
     }
 })
