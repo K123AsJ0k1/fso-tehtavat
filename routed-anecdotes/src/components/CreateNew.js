@@ -21,23 +21,28 @@ const CreateNew = ({ addNew }) => {
       author.reset()
       info.reset()
     }
-    //type={content.type} value={content.value} onChange={content.onChange}
-    //type={author.type} value={author.value} onChange={author.onChange}
+    
+    const spread_modification = (object) => {
+      let newObject = {...object}
+      delete newObject['reset']
+      return newObject
+    } 
+
     return (
       <div>
         <h2>create a new anecdote</h2>
         <form onSubmit={handleSubmit}>
           <div>
             content
-            <input  {...content} />
+            <input { ...spread_modification(content) } />
           </div>
           <div>
             author
-            <input  {...author} />
+            <input  { ...spread_modification(author)} />
           </div>
           <div>
             url for more info
-            <input {...info} />
+            <input { ...spread_modification(info)} />
           </div>
           <button>create</button>
           <button onClick={handleReset}>reset</button>
