@@ -243,3 +243,126 @@ Jos URL on muotoa /notes/:id ja vastaa yksittäisen muistiinpanon URL:ia, niin m
     const note = match 
         ? notes.find(note => note.id === Number(match.params.id))
         : null
+
+# Custom-hookit
+
+React tarjoaa kymmenen erilaista valmista hookia, joista eniten käytetään useState ja useEffect. Hookit eivät ole mitä tahansa funktiota, vaan niitä on käytettävä tiettyjen sääntöjen mukaisesti, jotka ovat: Älä kutsu Hookeja loopeissa, ehdoissa tai rekusoirivssa funktioissa tai tavallisissa javascript funktioissa. Create React Appin valmiiksi asentama Eslint sääntöjä varoitta, jos hookeja käytetään väärin. React antaa mahddollisuuden myös omien custom-hookien luomiseen. Se mahdollistaa komponenttien logiikan uudelleenkäyttämisen.
+
+Ne ovat tavallisia javascript funktiota, jotka voivat kutsua mitä tahansa muita hookeja sääntöjen puitteissa. Niiden nimien täytyy alkaa sanalla use. Esimerkki custom hookista on:
+
+    const useCounter = () => {
+        const [value, setValue] = useState(0)
+
+        const increase = () => {
+            setValue(value + 1)
+        }
+
+        const decrease = () => {
+            setValue(value - 1)
+        }
+
+        const zero = () => {
+            setValue(0)
+        }
+
+        return {
+            value, 
+            increase,
+            decrease,
+            zero
+        }
+    }
+
+Sitä voidaan käyttää seuraavalla tavalla:
+
+    const App = (props) => {
+        const counter = useCounter()
+
+        return (
+            <div>
+            <div>{counter.value}</div>
+            <button onClick={counter.increase}>
+                plus
+            </button>
+            <button onClick={counter.decrease}>
+                minus
+            </button>      
+            <button onClick={counter.zero}>
+                zero
+            </button>
+            </div>
+        )
+    }
+
+Sitä voidaan uusiokäyttää seuraavasti:
+
+    const App = () => {
+        const left = useCounter()
+        const right = useCounter()
+
+        return (
+            <div>
+            {left.value}
+            <button onClick={left.increase}>
+                left
+            </button>
+            <button onClick={right.increase}>
+                right
+            </button>
+            {right.value}
+            </div>
+        )
+    }
+
+Jos haluttaisiin helpottaa lomakkeen tilanhallintaa, niin voitaisiin luoda
+
+    const useField = (type) => {
+        const [value, setValue] = useState('')
+
+        const onChange = (event) => {
+            setValue(event.target.value)
+        }
+
+        return {
+            type,
+            value,
+            onChange
+        }
+        }
+
+, jolloin
+
+    const App = () => {
+        const name = useField('text')
+        // ...
+
+        return (
+            <div>
+            <form>
+                <input
+                type={name.type}
+                value={name.value}
+                onChange={name.onChange} 
+                /> 
+                // ...
+            </form>
+            </div>
+        )
+    }
+
+Helpommalla voidaan tosin päästä hyödyntämllä spread-syntaksia seuraavasti:
+
+    <input {...name} /> 
+
+Tätä hyödyntäen propsien välitys helpottu seuraavasti:
+
+    <Greeting firstName='Arto' lastName='Hellas' />
+
+    const person = {
+        firstName: 'Arto',
+        lastName: 'Hellas'
+    }
+
+    <Greeting {...person} />
+
+Custom hookit siis mahdollistavat tavan jakaa koodia modulaariisin osiin.
