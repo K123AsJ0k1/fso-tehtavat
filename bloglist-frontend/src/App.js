@@ -5,14 +5,16 @@ import Notification from "./components/Notification";
 import Togglable from "./components/Togglable";
 import BlogForm from "./components/BlogForm";
 import blogService from "./services/blogs";
+import { useDispatch } from "react-redux";
+import { setNotification } from "./reducers/notificationReducer";
 
 const App = () => {
+  const dispatch = useDispatch();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
   const [blogs, setBlogs] = useState([]);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState(0);
   const [visible, setVisible] = useState(false);
   const [viewable, setViewable] = useState(false);
 
@@ -23,19 +25,21 @@ const App = () => {
   const createBlog = async (blog) => {
     try {
       await blogService.create(blog);
-      setMessage(`a new blog ${blog.title} by ${blog.author} added`);
-      setMessageType(1);
-      setTimeout(() => {
-        setMessage("");
-        setMessageType(0);
-      }, 5000);
+      dispatch(
+        setNotification(
+          `a new blog ${blog.title} by ${blog.author} added`,
+          "success",
+          5
+        )
+      );
     } catch (exception) {
-      setMessage("a failure happend in the creation process");
-      setMessageType(2);
-      setTimeout(() => {
-        setMessage("");
-        setMessageType(0);
-      }, 5000);
+      dispatch(
+        setNotification(
+          "a failure happend in the creation process",
+          "failure",
+          5
+        )
+      );
     }
   };
 
@@ -48,21 +52,17 @@ const App = () => {
         url: blog.url,
         likes: blog.likes + 1,
       });
-      setMessage(
-        `A blog with a title ${blog.title} from an author ${blog.author} has been liked`
+      dispatch(
+        setNotification(
+          `A blog with a title ${blog.title} from an author ${blog.author} has been liked`,
+          "success",
+          5
+        )
       );
-      setMessageType(1);
-      setTimeout(() => {
-        setMessage("");
-        setMessageType(0);
-      }, 5000);
     } catch (exception) {
-      setMessage("a failure happend in the creation process");
-      setMessageType(2);
-      setTimeout(() => {
-        setMessage("");
-        setMessageType(0);
-      }, 5000);
+      dispatch(
+        setNotification("a failure happend in the update process", "failure", 5)
+      );
     }
   };
 
@@ -72,21 +72,21 @@ const App = () => {
 
       try {
         await blogService.remove(blog.id);
-        setMessage(
-          `A blog with a ${blog.title} from an author ${blog.author} was deleted`
+        dispatch(
+          setNotification(
+            `A blog with a ${blog.title} from an author ${blog.author} was deleted`,
+            "success",
+            5
+          )
         );
-        setMessageType(1);
-        setTimeout(() => {
-          setMessage("");
-          setMessageType(0);
-        }, 5000);
       } catch (exception) {
-        setMessage("a failure happend in the creation process");
-        setMessageType(2);
-        setTimeout(() => {
-          setMessage("");
-          setMessageType(0);
-        }, 5000);
+        dispatch(
+          setNotification(
+            "A failure happend in the deletion process",
+            "failure",
+            5
+          )
+        );
       }
     }
   };
@@ -94,7 +94,7 @@ const App = () => {
   useEffect(() => {
     setVisible(false);
     blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, [message, setMessage]);
+  }, []);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBloglistUser");
@@ -123,20 +123,13 @@ const App = () => {
   if (user === null) {
     return (
       <div>
-        <Notification
-          message={message}
-          setMessage={setMessage}
-          messageType={messageType}
-          setMessageType={setMessageType}
-        />
+        <Notification />
         <Login
           username={username}
           setUsername={setUsername}
           password={password}
           setPassword={setPassword}
           setUser={setUser}
-          setMessage={setMessage}
-          setMessageType={setMessageType}
         />
       </div>
     );
@@ -145,7 +138,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      <Notification message={message} messageType={messageType} />
+      <Notification />
       <div>
         {user.username} logged in
         <button onClick={handleLogout}>logout</button>
@@ -165,8 +158,6 @@ const App = () => {
             key={blog.id}
             blog={blog}
             user={user}
-            setMessage={setMessage}
-            setMessageType={setMessageType}
             viewable={viewable}
             toggleViewable={toggleViewable}
             updateBlog={updateBlog}
