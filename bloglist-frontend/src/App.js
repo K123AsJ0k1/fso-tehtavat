@@ -7,7 +7,12 @@ import BlogForm from "./components/BlogForm";
 import blogService from "./services/blogs";
 import { useDispatch, useSelector } from "react-redux";
 import { setNotification } from "./reducers/notificationReducer";
-import { initializeBlogs, createBlog } from "./reducers/blogReducer";
+import {
+  initializeBlogs,
+  createBlog,
+  likingBlog,
+  deleteBlog,
+} from "./reducers/blogReducer";
 
 const App = () => {
   const blogs = useSelector((state) => state.blogs);
@@ -58,15 +63,10 @@ const App = () => {
     }
   };
 
-  const updateBlog = async (event, blog) => {
+  const likeBlog = async (event, blog) => {
     event.preventDefault();
     try {
-      await blogService.update(blog.id, {
-        title: blog.title,
-        author: blog.author,
-        url: blog.url,
-        likes: blog.likes + 1,
-      });
+      dispatch(likingBlog(blog));
       dispatch(
         setNotification(
           `A blog with a title ${blog.title} from an author ${blog.author} has been liked`,
@@ -84,9 +84,9 @@ const App = () => {
   const removeBlog = async (event, blog) => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       event.preventDefault();
-
       try {
-        await blogService.remove(blog.id);
+        //await blogService.remove(blog.id);
+        dispatch(deleteBlog(blog));
         dispatch(
           setNotification(
             `A blog with a ${blog.title} from an author ${blog.author} was deleted`,
@@ -161,7 +161,7 @@ const App = () => {
             user={user}
             viewable={viewable}
             toggleViewable={toggleViewable}
-            updateBlog={updateBlog}
+            updateBlog={likeBlog}
             removeBlog={removeBlog}
           />
         ))
