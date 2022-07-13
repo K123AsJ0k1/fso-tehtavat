@@ -1,16 +1,15 @@
 import loginService from "../services/login";
-import blogService from "../services/blogs";
-import PropTypes from "prop-types";
+import { setupUser } from "../reducers/userReducer";
+import { setNotification } from "../reducers/notificationReducer";
+import { useDispatch } from "react-redux";
+import { useState } from "react";
 
-const Login = ({
-  username,
-  setUsername,
-  password,
-  setPassword,
-  setUser,
-  setMessage,
-  setMessageType,
-}) => {
+const Login = () => {
+  const dispatch = useDispatch();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
   const handleLogin = async (event) => {
     event.preventDefault();
 
@@ -20,17 +19,11 @@ const Login = ({
         password: password,
       });
       window.localStorage.setItem("loggedBloglistUser", JSON.stringify(user));
-      blogService.setToken(user.token);
-      setUser(user);
+      dispatch(setupUser(user));
       setUsername("");
       setPassword("");
     } catch (exception) {
-      setMessage("wrong username or password");
-      setMessageType(2);
-      setTimeout(() => {
-        setMessage("");
-        setMessageType(0);
-      }, 5000);
+      dispatch(setNotification("wrong username or password", "failure", 5));
     }
   };
 
@@ -64,11 +57,6 @@ const Login = ({
       </form>
     </div>
   );
-};
-
-Login.propTypes = {
-  username: PropTypes.string.isRequired,
-  password: PropTypes.string.isRequired,
 };
 
 export default Login;

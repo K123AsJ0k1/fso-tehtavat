@@ -4,7 +4,6 @@ import Login from "./components/Login";
 import Notification from "./components/Notification";
 import Togglable from "./components/Togglable";
 import BlogForm from "./components/BlogForm";
-import blogService from "./services/blogs";
 import { useDispatch, useSelector } from "react-redux";
 import { setNotification } from "./reducers/notificationReducer";
 import {
@@ -13,30 +12,25 @@ import {
   likingBlog,
   deleteBlog,
 } from "./reducers/blogReducer";
+import { setupUser, clearUserSetup } from "./reducers/userReducer";
 
 const App = () => {
+  const user = useSelector((state) => state.user);
   const blogs = useSelector((state) => state.blogs);
   const dispatch = useDispatch();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
   const [visible, setVisible] = useState(false);
   const [viewable, setViewable] = useState(false);
 
   useEffect(() => {
     setVisible(false);
     dispatch(initializeBlogs());
-  }, [dispatch]);
-
-  useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBloglistUser");
     if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      blogService.setToken(user.token);
+      const user_data = JSON.parse(loggedUserJSON);
+      dispatch(setupUser(user_data));
     }
-  }, []);
+  }, [dispatch]);
 
   const toggleViewable = () => {
     setViewable(!viewable);
@@ -85,7 +79,6 @@ const App = () => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       event.preventDefault();
       try {
-        //await blogService.remove(blog.id);
         dispatch(deleteBlog(blog));
         dispatch(
           setNotification(
@@ -107,8 +100,7 @@ const App = () => {
   };
 
   const handleLogout = () => {
-    window.localStorage.clear();
-    setUser(null);
+    dispatch(clearUserSetup());
   };
 
   const compareBlog = (a, b) => {
@@ -121,17 +113,11 @@ const App = () => {
     return 0;
   };
 
-  if (user === null) {
+  if (user.name === "") {
     return (
       <div>
         <Notification />
-        <Login
-          username={username}
-          setUsername={setUsername}
-          password={password}
-          setPassword={setPassword}
-          setUser={setUser}
-        />
+        <Login />
       </div>
     );
   }
