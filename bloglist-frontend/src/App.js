@@ -5,26 +5,41 @@ import Notification from "./components/Notification";
 import Togglable from "./components/Togglable";
 import BlogForm from "./components/BlogForm";
 import blogService from "./services/blogs";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setNotification } from "./reducers/notificationReducer";
+import { initializeBlogs, createBlog } from "./reducers/blogReducer";
 
 const App = () => {
+  const blogs = useSelector((state) => state.blogs);
   const dispatch = useDispatch();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [blogs, setBlogs] = useState([]);
   const [visible, setVisible] = useState(false);
   const [viewable, setViewable] = useState(false);
+
+  useEffect(() => {
+    setVisible(false);
+    dispatch(initializeBlogs());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem("loggedBloglistUser");
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON);
+      setUser(user);
+      blogService.setToken(user.token);
+    }
+  }, []);
 
   const toggleViewable = () => {
     setViewable(!viewable);
   };
 
-  const createBlog = async (blog) => {
+  const addBlog = async (blog) => {
     try {
-      await blogService.create(blog);
+      dispatch(createBlog(blog));
       dispatch(
         setNotification(
           `a new blog ${blog.title} by ${blog.author} added`,
@@ -91,20 +106,6 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
-    setVisible(false);
-    blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, []);
-
-  useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem("loggedBloglistUser");
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      blogService.setToken(user.token);
-    }
-  }, []);
-
   const handleLogout = () => {
     window.localStorage.clear();
     setUser(null);
@@ -149,7 +150,7 @@ const App = () => {
         setVisible={setVisible}
         buttonLabel="create new blog"
       >
-        <BlogForm createBlog={createBlog} />
+        <BlogForm createBlog={addBlog} />
       </Togglable>
       {blogs
         .map((blog) => (
