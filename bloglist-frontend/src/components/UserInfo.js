@@ -1,5 +1,4 @@
 const UserInfo = ({ users }) => {
-  //console.log(users[0].blogs.length());
   return (
     <div>
       <h2>Users</h2>
@@ -11,7 +10,9 @@ const UserInfo = ({ users }) => {
           </tr>
           {users.map((user) => (
             <tr key={user.id}>
-              <th>{user.name}</th>
+              <th>
+                <a href={`/users/${user.id}`}>{user.name}</a>
+              </th>
               <th>{user.blogs.length}</th>
             </tr>
           ))}

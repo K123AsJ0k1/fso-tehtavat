@@ -3,6 +3,7 @@ import Home from "./components/Home";
 import Login from "./components/Login";
 import UserInfo from "./components/UserInfo";
 import Navigation from "./components/Navigation";
+import User from "./components/User";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { initializeBlogs } from "./reducers/blogReducer";
@@ -13,6 +14,7 @@ const App = () => {
   const user = useSelector((state) => state.user);
   const users = useSelector((state) => state.users);
   const blogs = useSelector((state) => state.blogs);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -31,6 +33,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home user={user} blogs={blogs} />} />
         <Route path="/users" element={<UserInfo users={users} />} />
+        <Route path="/users/:id" element={<User users={users} />} />
         <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
