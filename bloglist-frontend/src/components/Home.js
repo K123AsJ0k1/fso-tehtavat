@@ -37,9 +37,7 @@ const Home = ({ user, blogs }) => {
         <BlogForm />
       </Togglable>
       {blogs
-        .map((blog) => (
-          <Blog classname="blog" key={blog.id} blog={blog} user={user} />
-        ))
+        .map((blog) => <Blog classname="blog" key={blog.id} blog={blog} />)
         .sort(compareBlog)}
     </div>
   );
