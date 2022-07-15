@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import { Table } from "react-bootstrap";
 
 const User = ({ users }) => {
   const id = useParams().id;
@@ -14,11 +15,22 @@ const User = ({ users }) => {
     <div>
       <h1>{user.name}</h1>
       <h2>added blogs</h2>
-      <ul>
-        {blogs.map((blog) => (
-          <li key={blog.id}>{blog.title}</li>
-        ))}
-      </ul>
+      <Table striped>
+        <tbody>
+          <tr>
+            <td>Title:</td>
+            <td>Author:</td>
+            <td>Url:</td>
+          </tr>
+          {blogs.map((blog) => (
+            <tr key={blog.id}>
+              <td>{blog.title}</td>
+              <td>{blog.author}</td>
+              <td>{blog.url}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
     </div>
   );
 };

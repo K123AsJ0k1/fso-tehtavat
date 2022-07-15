@@ -1,15 +1,15 @@
 import "../index.css";
-//import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
+import { Alert } from "react-bootstrap";
 
 const Notification = () => {
   const notification = useSelector((state) => state.notification);
 
   if (notification.type === "success") {
-    return <div className="success">{notification.content}</div>;
+    return <Alert variant="success">{notification.content}</Alert>;
   }
   if (notification.type === "failure") {
-    return <div className="failure">{notification.content}</div>;
+    return <Alert variant="failure">{notification.content}</Alert>;
   }
   return null;
 };

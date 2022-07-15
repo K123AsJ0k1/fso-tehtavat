@@ -1,11 +1,12 @@
 import { useState } from "react";
 import Blog from "./Blog";
-import Login from "./Login";
-import Notification from "./Notification";
 import Togglable from "./Togglable";
 import BlogForm from "./BlogForm";
+import { Table } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const Home = ({ user, blogs }) => {
+  const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
 
   const compareBlog = (a, b) => {
@@ -19,12 +20,7 @@ const Home = ({ user, blogs }) => {
   };
 
   if (user.name === "") {
-    return (
-      <div>
-        <Notification />
-        <Login />
-      </div>
-    );
+    navigate("/login");
   }
 
   return (
@@ -36,9 +32,13 @@ const Home = ({ user, blogs }) => {
       >
         <BlogForm />
       </Togglable>
-      {blogs
-        .map((blog) => <Blog classname="blog" key={blog.id} blog={blog} />)
-        .sort(compareBlog)}
+      <Table striped>
+        <tbody>
+          {blogs
+            .map((blog) => <Blog classname="blog" key={blog.id} blog={blog} />)
+            .sort(compareBlog)}
+        </tbody>
+      </Table>
     </div>
   );
 };

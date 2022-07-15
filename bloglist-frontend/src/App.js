@@ -29,19 +29,21 @@ const App = () => {
   }, [dispatch]);
 
   return (
-    <Router>
-      <Navigation user={user} />
-      <Routes>
-        <Route path="/" element={<Home user={user} blogs={blogs} />} />
-        <Route path="/users" element={<UserInfo users={users} />} />
-        <Route path="/users/:id" element={<User users={users} />} />
-        <Route
-          path="/blogs/:id"
-          element={<BlogInfo user={user} blogs={blogs} />}
-        />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </Router>
+    <div className="container">
+      <Router>
+        <Navigation user={user} />
+        <Routes>
+          <Route path="/" element={<Home user={user} blogs={blogs} />} />
+          <Route path="/users" element={<UserInfo users={users} />} />
+          <Route path="/users/:id" element={<User users={users} />} />
+          <Route
+            path="/blogs/:id"
+            element={<BlogInfo user={user} blogs={blogs} />}
+          />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </Router>
+    </div>
   );
 };
 

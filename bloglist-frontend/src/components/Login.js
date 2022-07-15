@@ -3,9 +3,12 @@ import { setupUser } from "../reducers/userReducer";
 import { setNotification } from "../reducers/notificationReducer";
 import { useDispatch } from "react-redux";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Form, Button } from "react-bootstrap";
 
-const Login = () => {
+const Login = (props) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +25,7 @@ const Login = () => {
       dispatch(setupUser(user));
       setUsername("");
       setPassword("");
+      navigate("/");
     } catch (exception) {
       dispatch(setNotification("wrong username or password", "failure", 5));
     }
@@ -29,32 +33,28 @@ const Login = () => {
 
   return (
     <div>
-      <h3>log in to application</h3>
-      <form onSubmit={handleLogin}>
-        <div>
-          username
-          <input
-            id="username"
+      <h3>login</h3>
+      <Form onSubmit={handleLogin}>
+        <Form.Group>
+          <Form.Label>username:</Form.Label>
+          <Form.Control
             type="text"
-            value={username}
             name="username"
+            value={username}
             onChange={({ target }) => setUsername(target.value)}
           />
-        </div>
-        <div>
-          password
-          <input
-            id="password"
-            type="text"
-            value={password}
+          <Form.Label>password:</Form.Label>
+          <Form.Control
+            type="password"
             name="password"
+            value={password}
             onChange={({ target }) => setPassword(target.value)}
           />
-        </div>
-        <button id="login-button" type="submit">
-          login
-        </button>
-      </form>
+          <Button variant="primary" type="submit">
+            login
+          </Button>
+        </Form.Group>
+      </Form>
     </div>
   );
 };

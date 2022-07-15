@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { setNotification } from "../reducers/notificationReducer";
 import { commentingBlog } from "../reducers/blogReducer";
+import { Form, Button } from "react-bootstrap";
 
 const CommentForm = ({ blog }) => {
   const dispatch = useDispatch();
@@ -18,6 +19,7 @@ const CommentForm = ({ blog }) => {
           5
         )
       );
+      setComment("");
     } catch (exception) {
       dispatch(
         setNotification(
@@ -31,21 +33,19 @@ const CommentForm = ({ blog }) => {
 
   return (
     <div>
-      <form onSubmit={commentBlog}>
-        <div>
-          <input
-            id="comment"
+      <Form onSubmit={commentBlog}>
+        <Form.Group>
+          <Form.Control
             type="text"
-            value={comment}
             name="comment"
+            value={comment}
             onChange={({ target }) => setComment(target.value)}
-            placeholder="comment"
           />
-          <button id="comment-button" type="submit">
+          <Button variant="primary" type="submit">
             add comment
-          </button>
-        </div>
-      </form>
+          </Button>
+        </Form.Group>
+      </Form>
     </div>
   );
 };

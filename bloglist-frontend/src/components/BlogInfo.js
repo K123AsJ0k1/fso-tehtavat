@@ -1,10 +1,12 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setNotification } from "../reducers/notificationReducer";
 import { likingBlog, deleteBlog } from "../reducers/blogReducer";
 import CommentForm from "./CommentForm";
+import { Table, Button } from "react-bootstrap";
 
 const BlogInfo = ({ user, blogs }) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const id = useParams().id;
   const blog = blogs.find((data) => data.id === id);
@@ -43,6 +45,7 @@ const BlogInfo = ({ user, blogs }) => {
             5
           )
         );
+        navigate("/");
       } catch (exception) {
         dispatch(
           setNotification(
@@ -55,9 +58,8 @@ const BlogInfo = ({ user, blogs }) => {
     }
   };
 
-  if (blog.user.username === user.username) {
-    return (
-      <div>
+  /*
+    <div>
         <h2>{blog.title}</h2>
         <a href={blog.url}>{blog.url}</a>
         <br />
@@ -78,29 +80,94 @@ const BlogInfo = ({ user, blogs }) => {
           ))}
         </ul>
       </div>
+  */
+  if (blog.user.username === user.username) {
+    return (
+      <div>
+        <h2>{blog.title}</h2>
+        <Table striped>
+          <tbody>
+            <tr>
+              <td>
+                <Link to={blog.url}>{blog.url}</Link>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                {blog.likes} likes
+                <Button
+                  variant="primary"
+                  onClick={(event) => likeBlog(event, blog)}
+                >
+                  like
+                </Button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                added by {blog.user.name}
+                <Button
+                  variant="primary"
+                  onClick={(event) => removeBlog(event, blog)}
+                >
+                  remove
+                </Button>
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        <h5>comments</h5>
+        <CommentForm blog={blog} />
+        <Table striped>
+          <tbody>
+            {blog.comments.map((comment, index) => (
+              <tr key={index}>
+                <td>{comment}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
     );
   }
 
   return (
     <div>
       <h2>{blog.title}</h2>
-      <a href={blog.url}>{blog.url}</a>
-      <br />
-      {blog.likes} likes{" "}
-      <button onClick={(event) => likeBlog(event, blog)}>like</button>
-      <br />
-      added by {blog.user.name}
-      <br />
-      <br />
+      <Table striped>
+        <tbody>
+          <tr>
+            <td>
+              <Link to={blog.url}>{blog.url}</Link>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              {blog.likes} likes
+              <Button
+                variant="primary"
+                onClick={(event) => likeBlog(event, blog)}
+              >
+                like
+              </Button>
+            </td>
+          </tr>
+          <tr>
+            <td>added by {blog.user.name}</td>
+          </tr>
+        </tbody>
+      </Table>
       <h5>comments</h5>
-      <br />
       <CommentForm blog={blog} />
-      <br />
-      <ul>
-        {blog.comments.map((comment, index) => (
-          <li key={index}>{comment}</li>
-        ))}
-      </ul>
+      <Table striped>
+        <tbody>
+          {blog.comments.map((comment, index) => (
+            <tr key={index}>
+              <td>{comment}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
     </div>
   );
 };

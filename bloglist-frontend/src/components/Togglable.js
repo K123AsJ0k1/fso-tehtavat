@@ -1,3 +1,5 @@
+import { Button } from "react-bootstrap";
+
 const Togglable = (props) => {
   const hideWhenVisible = { display: props.visible ? "none" : "" };
   const showWhenVisible = { display: props.visible ? "" : "none" };
@@ -9,11 +11,15 @@ const Togglable = (props) => {
   return (
     <div>
       <div style={hideWhenVisible}>
-        <button onClick={toggleVisibility}>{props.buttonLabel}</button>
+        <Button variant="primary" onClick={toggleVisibility}>
+          {props.buttonLabel}
+        </Button>
       </div>
       <div style={showWhenVisible}>
         {props.children}
-        <button onClick={toggleVisibility}>cancel</button>
+        <Button variant="primary" onClick={toggleVisibility}>
+          cancel
+        </Button>
       </div>
     </div>
   );

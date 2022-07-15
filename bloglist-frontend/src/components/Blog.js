@@ -1,16 +1,13 @@
-const Blog = ({ blog }) => {
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: "solid",
-    borderWidth: 1,
-    marginBottom: 5,
-  };
+import { Link } from "react-router-dom";
 
+const Blog = ({ blog }) => {
   return (
-    <div className="blog" style={blogStyle}>
-      <a href={`/blogs/${blog.id}`}>{blog.title}</a>
-    </div>
+    <tr key={blog.id}>
+      <td>
+        <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+      </td>
+      <td>{blog.author}</td>
+    </tr>
   );
 };
 
