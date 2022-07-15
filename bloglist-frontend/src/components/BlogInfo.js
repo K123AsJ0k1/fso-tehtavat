@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setNotification } from "../reducers/notificationReducer";
 import { likingBlog, deleteBlog } from "../reducers/blogReducer";
+import CommentForm from "./CommentForm";
 
 const BlogInfo = ({ user, blogs }) => {
   const dispatch = useDispatch();
@@ -65,7 +66,17 @@ const BlogInfo = ({ user, blogs }) => {
         <br />
         added by {blog.user.name}
         <button onClick={(event) => removeBlog(event, blog)}>remove</button>
-        <h1>comments</h1>
+        <br />
+        <br />
+        <h5>comments</h5>
+        <br />
+        <CommentForm blog={blog} />
+        <br />
+        <ul>
+          {blog.comments.map((comment, index) => (
+            <li key={index}>{comment}</li>
+          ))}
+        </ul>
       </div>
     );
   }
@@ -80,7 +91,11 @@ const BlogInfo = ({ user, blogs }) => {
       <br />
       added by {blog.user.name}
       <br />
+      <br />
       <h5>comments</h5>
+      <br />
+      <CommentForm blog={blog} />
+      <br />
       <ul>
         {blog.comments.map((comment, index) => (
           <li key={index}>{comment}</li>

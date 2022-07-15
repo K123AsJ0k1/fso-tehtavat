@@ -53,6 +53,26 @@ export const likingBlog = (blog) => {
   };
 };
 
+export const commentingBlog = (blog, comment) => {
+  return async (dispatch) => {
+    //console.log(blog.comments);
+    //console.log(comment);
+    //const new_comments = blog.comments.concat(comment);
+    //console.log(new_comments);
+    const updatedBlog = {
+      title: blog.title,
+      author: blog.author,
+      url: blog.url,
+      likes: blog.likes,
+      user: blog.user,
+      id: blog.id,
+      comments: blog.comments.concat(comment),
+    };
+    await blogService.comment(blog.id, updatedBlog);
+    dispatch(updateBlog(updatedBlog));
+  };
+};
+
 export const deleteBlog = (blog) => {
   return async (dispatch) => {
     await blogService.remove(blog.id);
