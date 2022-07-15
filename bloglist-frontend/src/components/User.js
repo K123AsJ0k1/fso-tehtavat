@@ -10,13 +10,6 @@ const User = ({ users }) => {
 
   const blogs = user.blogs;
 
-  /*
-  <ul>
-        {user.blogs.map((blog) => (
-          <li key={blog.id}>{blog.title}</li>
-        ))}
-      </ul>
-  */
   return (
     <div>
       <h1>{user.name}</h1>

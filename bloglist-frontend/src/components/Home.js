@@ -4,12 +4,8 @@ import Login from "./Login";
 import Notification from "./Notification";
 import Togglable from "./Togglable";
 import BlogForm from "./BlogForm";
-//import { useSelector } from "react-redux";
 
 const Home = ({ user, blogs }) => {
-  //const user = useSelector((state) => state.user);
-  //const blogs = useSelector((state) => state.blogs);
-
   const [visible, setVisible] = useState(false);
 
   const compareBlog = (a, b) => {

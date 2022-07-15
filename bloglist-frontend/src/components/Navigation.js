@@ -1,5 +1,5 @@
 import Notification from "./Notification";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { clearUserSetup } from "../reducers/userReducer";
 
 const Navigation = ({ user }) => {
@@ -14,7 +14,7 @@ const Navigation = ({ user }) => {
       <h2>blogs</h2>
       <Notification />
       <div>
-        {user.username} logged in
+        <p>{user.username} logged in</p>
         <button onClick={handleLogout}>logout</button>
       </div>
     </div>
