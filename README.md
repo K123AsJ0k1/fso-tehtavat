@@ -46,10 +46,10 @@ Osa 6
 
 Osa 7
 
-![7.1-7.6](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/routed-anecdotes)
+![Tehtävät 7.1-7.6](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/routed-anecdotes)
 
-![7.7](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/country-hook)
+![Tehtävä 7.7](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/country-hook)
 
-![7.8](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/ultimate-hooks)
+![Tehtävä 7.8](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/ultimate-hooks)
 
-![7.9-7.21](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/bloglist-frontend)
+![Tehtävät 7.9-7.21](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/bloglist-frontend)
