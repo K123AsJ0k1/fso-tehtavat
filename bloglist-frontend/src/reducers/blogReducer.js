@@ -46,6 +46,7 @@ export const likingBlog = (blog) => {
       likes: blog.likes + 1,
       user: blog.user,
       id: blog.id,
+      comments: blog.comments,
     };
     await blogService.update(blog.id, updatedBlog);
     dispatch(updateBlog(updatedBlog));

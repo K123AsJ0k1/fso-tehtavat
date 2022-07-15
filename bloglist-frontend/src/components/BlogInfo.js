@@ -65,6 +65,7 @@ const BlogInfo = ({ user, blogs }) => {
         <br />
         added by {blog.user.name}
         <button onClick={(event) => removeBlog(event, blog)}>remove</button>
+        <h1>comments</h1>
       </div>
     );
   }
@@ -78,6 +79,13 @@ const BlogInfo = ({ user, blogs }) => {
       <button onClick={(event) => likeBlog(event, blog)}>like</button>
       <br />
       added by {blog.user.name}
+      <br />
+      <h5>comments</h5>
+      <ul>
+        {blog.comments.map((comment, index) => (
+          <li key={index}>{comment}</li>
+        ))}
+      </ul>
     </div>
   );
 };
