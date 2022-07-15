@@ -53,3 +53,9 @@ Osa 7
 ![Tehtävä 7.8](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/ultimate-hooks)
 
 ![Tehtävät 7.9-7.21](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/bloglist-frontend)
+
+Tai 
+
+![bloglist-frontend](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/bloglist-frontend)
+
+![bloglist-backend](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/blogilista)
