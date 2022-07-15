@@ -43,3 +43,13 @@ Osa 6
 ![Tehtävät 6.1-6.2](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%206/Teht%C3%A4v%C3%A4t/unicafe-redux)
 
 ![Tehtävät 6.3-6.21](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%206/Teht%C3%A4v%C3%A4t/redux-anecdotes)
+
+Osa 7
+
+![7.1-7.6](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/routed-anecdotes)
+
+![7.7](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/country-hook)
+
+![7.8](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/ultimate-hooks)
+
+![7.9-7.21](https://github.com/K123AsJ0k1/fso-tehtavat/tree/main/Osa%207/Teht%C3%A4v%C3%A4t/bloglist-frontend)
